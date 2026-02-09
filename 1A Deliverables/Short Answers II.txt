@@ -1,0 +1,4 @@
+
+The rules exist to enforce least privilege. For example, the sg rule allows only the EC2 instances to reach the Database, the IAM role rule exists give the instance an identity with specific permissions, and the Secrets Manager allows the app to read exactly the database credentials it needs to run. 
+If the SG rule were to be removed, the app would lose database connectivity; if the IAM role removed the app would not be able to access credentials
+If there was broader access, any leaked credentials could expose the database to the public. This role can read this specific secret because it is explicitly authorized for this resource and this resource only because no IAM policy grants permission beyond what the application strictly needs. 

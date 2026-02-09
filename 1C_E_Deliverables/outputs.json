@@ -1,0 +1,426 @@
+{
+  "arcanum_ec2_instance_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "i-0286be49d51741c1d"
+  },
+  "arcanum_log_group_name": {
+    "sensitive": false,
+    "type": "string",
+    "value": "/aws/ec2/arcanum-rds-app"
+  },
+  "arcanum_private_subnet_ids": {
+    "sensitive": false,
+    "type": [
+      "tuple",
+      [
+        "string",
+        "string"
+      ]
+    ],
+    "value": [
+      "subnet-09d1c9a29c3a4f41b",
+      "subnet-03bc3930753482834"
+    ]
+  },
+  "arcanum_public_subnet_ids": {
+    "sensitive": false,
+    "type": [
+      "tuple",
+      [
+        "string",
+        "string"
+      ]
+    ],
+    "value": [
+      "subnet-0034fb36b743ec76c",
+      "subnet-07d3e057e46b205dc"
+    ]
+  },
+  "arcanum_rds_endpoint": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arcanum-rds01.coj82qo2k48t.us-east-1.rds.amazonaws.com"
+  },
+  "arcanum_sns_topic_arn": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arn:aws:sns:us-east-1:233781468925:arcanum-db-incidents"
+  },
+  "arcanum_vpc_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "vpc-0693444b4e91d00ed"
+  },
+  "bonus_a_instance_profile_name": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arc_bonus_a-instance-profile-private"
+  },
+  "bonus_a_log_group_arn": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arn:aws:logs:us-east-1:233781468925:log-group:/aws/ec2/arcanum-rds-app"
+  },
+  "bonus_a_log_group_name": {
+    "sensitive": false,
+    "type": "string",
+    "value": "/aws/ec2/arcanum-rds-app"
+  },
+  "bonus_a_lp_cwlogs_policy_arn": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arn:aws:iam::233781468925:policy/arc_bonus_a-lp-cwlogs01"
+  },
+  "bonus_a_lp_params_policy_arn": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arn:aws:iam::233781468925:policy/arc_bonus_a-lp-ssm-read01"
+  },
+  "bonus_a_lp_secret_policy_arn": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arn:aws:iam::233781468925:policy/arc_bonus_a-lp-secrets-read01"
+  },
+  "bonus_a_private_ec2_security_group_ids": {
+    "sensitive": false,
+    "type": [
+      "set",
+      "string"
+    ],
+    "value": [
+      "sg-034b5e098a84a2d21"
+    ]
+  },
+  "bonus_a_private_instance_iam_instance_profile": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arc_bonus_a-instance-profile-private"
+  },
+  "bonus_a_private_instance_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "i-028fd1a2425dfca5f"
+  },
+  "bonus_a_private_instance_private_ip": {
+    "sensitive": false,
+    "type": "string",
+    "value": "10.0.11.49"
+  },
+  "bonus_a_private_subnet_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "subnet-09d1c9a29c3a4f41b"
+  },
+  "bonus_a_private_subnet_ids": {
+    "sensitive": false,
+    "type": [
+      "tuple",
+      [
+        "string",
+        "string"
+      ]
+    ],
+    "value": [
+      "subnet-09d1c9a29c3a4f41b",
+      "subnet-03bc3930753482834"
+    ]
+  },
+  "bonus_a_region": {
+    "sensitive": false,
+    "type": "string",
+    "value": "us-east-1"
+  },
+  "bonus_a_role_name": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arcanum-ec2-role01"
+  },
+  "bonus_a_secret_arn_guess": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arn:aws:secretsmanager:us-east-1:233781468925:secret:arc_bonus_a/rds/mysql*"
+  },
+  "bonus_a_ssm_start_session_command": {
+    "sensitive": false,
+    "type": "string",
+    "value": "aws ssm start-session --target i-028fd1a2425dfca5f --region us-east-1"
+  },
+  "bonus_a_vpc_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "vpc-0693444b4e91d00ed"
+  },
+  "bonus_a_vpce_security_group_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "sg-0f31720eb6bfdb984"
+  },
+  "lab_secret_arn": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arn:aws:secretsmanager:us-east-1:233781468925:secret:lab1a/rds/mysql-26qlOR"
+  },
+  "lab_secret_name": {
+    "sensitive": false,
+    "type": "string",
+    "value": "lab1a/rds/mysql"
+  },
+  "vpce_ec2messages_dns_entries": {
+    "sensitive": false,
+    "type": [
+      "list",
+      [
+        "object",
+        {
+          "dns_name": "string",
+          "hosted_zone_id": "string"
+        }
+      ]
+    ],
+    "value": [
+      {
+        "dns_name": "vpce-0ba4a831a4ce1269f-bw2pncqk.ec2messages.us-east-1.vpce.amazonaws.com",
+        "hosted_zone_id": "Z7HUB22UULQXV"
+      },
+      {
+        "dns_name": "vpce-0ba4a831a4ce1269f-bw2pncqk-us-east-1a.ec2messages.us-east-1.vpce.amazonaws.com",
+        "hosted_zone_id": "Z7HUB22UULQXV"
+      },
+      {
+        "dns_name": "ec2messages.us-east-1.amazonaws.com",
+        "hosted_zone_id": "Z06598571462279MF2I7Q"
+      }
+    ]
+  },
+  "vpce_ec2messages_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "vpce-0ba4a831a4ce1269f"
+  },
+  "vpce_kms_dns_entries": {
+    "sensitive": false,
+    "type": [
+      "list",
+      [
+        "object",
+        {
+          "dns_name": "string",
+          "hosted_zone_id": "string"
+        }
+      ]
+    ],
+    "value": [
+      {
+        "dns_name": "vpce-0466904024804eff4-bro339ma.kms.us-east-1.vpce.amazonaws.com",
+        "hosted_zone_id": "Z7HUB22UULQXV"
+      },
+      {
+        "dns_name": "vpce-0466904024804eff4-bro339ma-us-east-1a.kms.us-east-1.vpce.amazonaws.com",
+        "hosted_zone_id": "Z7HUB22UULQXV"
+      },
+      {
+        "dns_name": "kms.us-east-1.amazonaws.com",
+        "hosted_zone_id": "Z06805272QX1KD5I8V9CN"
+      },
+      {
+        "dns_name": "kms.us-east-1.api.aws",
+        "hosted_zone_id": "Z0682139HJCVVQN83675"
+      }
+    ]
+  },
+  "vpce_kms_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "vpce-0466904024804eff4"
+  },
+  "vpce_logs_dns_entries": {
+    "sensitive": false,
+    "type": [
+      "list",
+      [
+        "object",
+        {
+          "dns_name": "string",
+          "hosted_zone_id": "string"
+        }
+      ]
+    ],
+    "value": [
+      {
+        "dns_name": "vpce-0577029978415c91c-w2nqtypi.logs.us-east-1.vpce.amazonaws.com",
+        "hosted_zone_id": "Z7HUB22UULQXV"
+      },
+      {
+        "dns_name": "vpce-0577029978415c91c-w2nqtypi-us-east-1a.logs.us-east-1.vpce.amazonaws.com",
+        "hosted_zone_id": "Z7HUB22UULQXV"
+      },
+      {
+        "dns_name": "logs.us-east-1.amazonaws.com",
+        "hosted_zone_id": "Z0683382OO0JG1YPBAI4"
+      },
+      {
+        "dns_name": "streaming-logs.us-east-1.amazonaws.com",
+        "hosted_zone_id": "Z06609721ZCHED2PD76IL"
+      },
+      {
+        "dns_name": "streaming-logs.us-east-1.api.aws",
+        "hosted_zone_id": "Z06824881Z7353O0X48EN"
+      },
+      {
+        "dns_name": "logs.us-east-1.api.aws",
+        "hosted_zone_id": "Z02635981AJE3A1XOACJA"
+      }
+    ]
+  },
+  "vpce_logs_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "vpce-0577029978415c91c"
+  },
+  "vpce_s3_gateway_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "vpce-0a0ec1e8817fe3f21"
+  },
+  "vpce_secretsmanager_dns_entries": {
+    "sensitive": false,
+    "type": [
+      "list",
+      [
+        "object",
+        {
+          "dns_name": "string",
+          "hosted_zone_id": "string"
+        }
+      ]
+    ],
+    "value": [
+      {
+        "dns_name": "vpce-0bd25dfba809abfe2-93qt4bkm.secretsmanager.us-east-1.vpce.amazonaws.com",
+        "hosted_zone_id": "Z7HUB22UULQXV"
+      },
+      {
+        "dns_name": "vpce-0bd25dfba809abfe2-93qt4bkm-us-east-1a.secretsmanager.us-east-1.vpce.amazonaws.com",
+        "hosted_zone_id": "Z7HUB22UULQXV"
+      },
+      {
+        "dns_name": "secretsmanager.us-east-1.amazonaws.com",
+        "hosted_zone_id": "Z07614133CEYVEMD4CAZP"
+      }
+    ]
+  },
+  "vpce_secretsmanager_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "vpce-0bd25dfba809abfe2"
+  },
+  "vpce_ssm_dns_entries": {
+    "sensitive": false,
+    "type": [
+      "list",
+      [
+        "object",
+        {
+          "dns_name": "string",
+          "hosted_zone_id": "string"
+        }
+      ]
+    ],
+    "value": [
+      {
+        "dns_name": "vpce-09c9b9523a76bfb1c-lnwhbem8.ssm.us-east-1.vpce.amazonaws.com",
+        "hosted_zone_id": "Z7HUB22UULQXV"
+      },
+      {
+        "dns_name": "vpce-09c9b9523a76bfb1c-lnwhbem8-us-east-1a.ssm.us-east-1.vpce.amazonaws.com",
+        "hosted_zone_id": "Z7HUB22UULQXV"
+      },
+      {
+        "dns_name": "ssm.us-east-1.amazonaws.com",
+        "hosted_zone_id": "Z0275019NBVE3T4PK3SC"
+      },
+      {
+        "dns_name": "ssm.us-east-1.api.aws",
+        "hosted_zone_id": "Z00018952YEQEU73XN5FU"
+      }
+    ]
+  },
+  "vpce_ssm_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "vpce-09c9b9523a76bfb1c"
+  },
+  "vpce_ssmmessages_dns_entries": {
+    "sensitive": false,
+    "type": [
+      "list",
+      [
+        "object",
+        {
+          "dns_name": "string",
+          "hosted_zone_id": "string"
+        }
+      ]
+    ],
+    "value": [
+      {
+        "dns_name": "vpce-033cb59d3c97d14ed-j8csrov9.ssmmessages.us-east-1.vpce.amazonaws.com",
+        "hosted_zone_id": "Z7HUB22UULQXV"
+      },
+      {
+        "dns_name": "vpce-033cb59d3c97d14ed-j8csrov9-us-east-1a.ssmmessages.us-east-1.vpce.amazonaws.com",
+        "hosted_zone_id": "Z7HUB22UULQXV"
+      },
+      {
+        "dns_name": "ssmmessages.us-east-1.amazonaws.com",
+        "hosted_zone_id": "Z06810352EJMVU9SKDPVT"
+      },
+      {
+        "dns_name": "ssmmessages.us-east-1.api.aws",
+        "hosted_zone_id": "Z000013630OIWKHSPJBYG"
+      }
+    ]
+  },
+  "vpce_ssmmessages_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "vpce-033cb59d3c97d14ed"
+  },
+  "vpce_sts_dns_entries": {
+    "sensitive": false,
+    "type": [
+      "list",
+      [
+        "object",
+        {
+          "dns_name": "string",
+          "hosted_zone_id": "string"
+        }
+      ]
+    ],
+    "value": [
+      {
+        "dns_name": "vpce-06ccc9f1190723e39-40ke0cxn.sts.us-east-1.vpce.amazonaws.com",
+        "hosted_zone_id": "Z7HUB22UULQXV"
+      },
+      {
+        "dns_name": "vpce-06ccc9f1190723e39-40ke0cxn-us-east-1a.sts.us-east-1.vpce.amazonaws.com",
+        "hosted_zone_id": "Z7HUB22UULQXV"
+      },
+      {
+        "dns_name": "sts.us-east-1.amazonaws.com",
+        "hosted_zone_id": "Z07602492YBEBL7LBX9EV"
+      },
+      {
+        "dns_name": "sts.us-east-1.api.aws",
+        "hosted_zone_id": "Z02658902T58IM8JJKZ1S"
+      }
+    ]
+  },
+  "vpce_sts_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "vpce-06ccc9f1190723e39"
+  }
+}

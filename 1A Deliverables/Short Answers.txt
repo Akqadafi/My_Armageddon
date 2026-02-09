@@ -1,0 +1,6 @@
+Security groups act as identity-based firewalls, so allowing RDS access from an EC2 security group means only instances with that identity can connect, regardless of changing IPs, scaling, or instance replacement. This intent-based approach prevents internet exposure and lateral access from other instances, enforcing least privilege the way AWS designs internal service security.
+
+TCP 3306 which is the default MySQL port. RDS MySQL listens on this port, and our app connects to it.
+
+
+Secrets Manager prevents credential leakage, enables rotation, and decouples secrets from code and infrastructure. Access is controlled by IAM not by whomever has the file.So the app doesn't store secrets, only AWS does. 

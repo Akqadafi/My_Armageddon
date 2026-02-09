@@ -1,0 +1,143 @@
+# ############################################
+# # Bonus-A: Private compute + endpoints outputs
+# ############################################
+
+# output "bonus_a_private_ec2_instance_id" {
+#   description = "Bonus-A private EC2 instance ID"
+#   value       = aws_instance.arc_bonus_ec2.id
+# }
+
+# output "bonus_a_private_ec2_private_ip" {
+#   description = "Bonus-A private EC2 private IP"
+#   value       = aws_instance.arc_bonus_ec2.private_ip
+# }
+
+# output "bonus_a_instance_profile_name" {
+#   description = "Bonus-A instance profile name"
+#   value       = aws_iam_instance_profile.arc_bonus_ec2.name
+# }
+
+# # output "bonus_a_private_ec2_security_group_id" {
+# #   value = aws_security_group.arc_bonus_a_sg01.id
+# # }
+
+# # output "bonus_a_private_ec2_security_group_ids" {
+# #   value = aws_instance.arc_bonus_ec2.vpc_security_group_ids
+# # }
+
+# output "arcanum_vpce_s3_gateway_id" {
+#   description = "S3 Gateway endpoint ID"
+#   value       = aws_vpc_endpoint.arcanum_vpce_s3_gw01.id
+# }
+
+# output "arcanum_vpce_sts_id" {
+#   description = "STS Interface endpoint ID"
+#   value       = aws_vpc_endpoint.arcanum_vpce_sts01.id
+# }
+
+# output "arcanum_vpce_ssm_id" {
+#   description = "SSM Interface endpoint ID"
+#   value       = aws_vpc_endpoint.arcanum_vpce_ssm01.id
+# }
+
+# output "arcanum_vpce_ec2messages_id" {
+#   description = "EC2Messages Interface endpoint ID"
+#   value       = aws_vpc_endpoint.arcanum_vpce_ec2messages01.id
+# }
+
+# output "arcanum_vpce_ssmmessages_id" {
+#   description = "SSMMessages Interface endpoint ID"
+#   value       = aws_vpc_endpoint.arcanum_vpce_ssmmessages01.id
+# }
+
+# output "arcanum_vpce_logs_id" {
+#   description = "CloudWatch Logs Interface endpoint ID"
+#   value       = aws_vpc_endpoint.arcanum_vpce_logs01.id
+# }
+
+# output "arcanum_vpce_secretsmanager_id" {
+#   description = "Secrets Manager Interface endpoint ID"
+#   value       = aws_vpc_endpoint.arcanum_vpce_secrets01.id
+# }
+
+# output "arcanum_vpce_kms_id" {
+#   description = "KMS Interface endpoint ID"
+#   value       = aws_vpc_endpoint.arcanum_vpce_kms01.id
+# }
+
+# ############################################
+# # Bonus-B: ALB + target group + TLS/WAF/monitoring outputs
+# ############################################
+
+# output "bonus_b_alb_arn" {
+#   description = "ALB ARN"
+#   value       = aws_lb.arcanum_alb01.arn
+# }
+
+# output "bonus_b_alb_dns_name" {
+#   description = "ALB DNS name"
+#   value       = aws_lb.arcanum_alb01.dns_name
+# }
+
+# output "bonus_b_target_group_arn" {
+#   description = "Target Group ARN"
+#   value       = aws_lb_target_group.arcanum_tg01.arn
+# }
+
+# output "bonus_b_http_listener_arn" {
+#   description = "HTTP listener ARN"
+#   value       = aws_lb_listener.arcanum_http_listener01.arn
+# }
+
+# output "bonus_b_https_listener_arn" {
+#   description = "HTTPS listener ARN (null if enable_https=false)"
+#   value       = var.enable_https ? aws_lb_listener.arcanum_https_listener01[0].arn : null
+# }
+
+# output "bonus_b_acm_cert_arn" {
+#   description = "ACM certificate ARN"
+#   value       = aws_acm_certificate.arcanum_acm_cert01.arn
+# }
+
+# output "bonus_b_waf_arn" {
+#   description = "WAF ARN (null if enable_waf=false)"
+#   value       = var.enable_waf ? aws_wafv2_web_acl.arcanum_waf01[0].arn : null
+# }
+
+# output "bonus_b_dashboard_name" {
+#   description = "CloudWatch dashboard name"
+#   value       = aws_cloudwatch_dashboard.arcanum_dashboard01.dashboard_name
+# }
+
+# output "bonus_b_alb_5xx_alarm_name" {
+#   description = "Alarm name for ALB 5XX"
+#   value       = aws_cloudwatch_metric_alarm.arcanum_alb_5xx_alarm01.alarm_name
+# }
+
+# ############################################
+# # DNS / App URL outputs (works now; HTTPS usable once TLS is validated)
+# ############################################
+
+# output "bonus_b_app_fqdn" {
+#   description = "Application FQDN (app subdomain + domain)"
+#   value       = "${var.app_subdomain}.${var.domain_name}"
+# }
+
+# output "bonus_b_app_url_https" {
+#   description = "Intended HTTPS URL (will work after ACM validation + DNS record)"
+#   value       = "https://${var.app_subdomain}.${var.domain_name}"
+# }
+
+# output "bonus_b_route53_zone_id" {
+#   description = "Route53 public hosted zone ID for domain_name"
+#   value       = data.aws_route53_zone.arcanum_zone.zone_id
+# }
+
+# ############################################
+# # Optional: ALB access logs bucket
+# ############################################
+
+# output "bonus_b_alb_logs_bucket_name" {
+#   description = "ALB logs bucket name (null if logging disabled)"
+#   value       = var.enable_alb_access_logs ? aws_s3_bucket.arcanum_alb_logs_bucket01[0].bucket : null
+# }

@@ -1,0 +1,307 @@
+# # Explanation: Outputs are your mission report—what got built and where to find it.
+# output "arcanum_vpc_id" {
+#   value = aws_vpc.arcanum_vpc01.id
+# }
+
+# output "arcanum_public_subnet_ids" {
+#   value = aws_subnet.arcanum_public_subnets[*].id
+# }
+
+# output "arcanum_private_subnet_ids" {
+#   value = aws_subnet.arcanum_private_subnets[*].id
+# }
+
+# output "arcanum_ec2_instance_id" {
+#   value = aws_instance.arcanum_ec201.id
+# }
+
+# output "arcanum_rds_endpoint" {
+#   value = aws_db_instance.arcanum_rds01.address
+# }
+# output "lab_secret_name" {
+#   value = aws_secretsmanager_secret.arcanum_db_secret01.name
+# }
+
+# output "lab_secret_arn" {
+#   value = aws_secretsmanager_secret.arcanum_db_secret01.arn
+# }
+
+# output "arcanum_sns_topic_arn" {
+#   value = aws_sns_topic.arcanum_sns_topic01.arn
+# }
+
+# output "arcanum_log_group_name" {
+#   value = aws_cloudwatch_log_group.arcanum_log_group01.name
+# }
+
+# ############################################
+# # outputs.tf — Bonus A (Private EC2 + VPC Endpoints)
+# ############################################
+
+# output "arcanum_region" {
+#   description = "AWS region used by this deployment"
+#   value       = var.aws_region
+# }
+
+# # output "arcanum_vpc_id" {
+# #   description = "VPC ID"
+# #   value       = aws_vpc.arcanum_vpc01.id
+# # }
+
+# output "arcanum_private_subnet_id" {
+#   description = "Primary private subnet used for the private EC2 and endpoints"
+#   value       = aws_subnet.arcanum_private_subnets[0].id
+# }
+
+# # output "arcanum_private_subnet_ids" {
+# #   description = "All private subnet IDs"
+# #   value       = aws_subnet.arcanum_private_subnets[*].id
+# # }
+
+# ############################################
+# # EC2 (Private)
+# ############################################
+
+# output "arcanum_private_instance_id" {
+#   description = "Private EC2 instance ID (Session Manager target)"
+#   value       = aws_instance.arc_bonus_ec2.id
+# }
+
+# output "arcanum_private_instance_private_ip" {
+#   description = "Private EC2 private IP"
+#   value       = aws_instance.arc_bonus_ec2.private_ip
+# }
+
+# output "arcanum_private_instance_iam_instance_profile" {
+#   description = "Instance profile attached to private EC2"
+#   value       = aws_instance.arc_bonus_ec2.iam_instance_profile
+# }
+
+# output "arcanum_ssm_start_session_command" {
+#   description = "Command to open a Session Manager shell"
+#   value       = "aws ssm start-session --target ${aws_instance.arc_bonus_ec2.id} --region ${var.aws_region}"
+# }
+
+# ############################################
+# # Security Groups
+# ############################################
+
+# output "arcanum_vpce_security_group_id" {
+#   description = "Security group applied to Interface VPC Endpoints"
+#   value       = aws_security_group.arcanum_vpce_sg01.id
+# }
+
+# # If you truly use a separate SG for the private EC2, output it here.
+# # NOTE: In your snippet, the instance uses aws_security_group.arcanum_ec2_sg.id,
+# # not arc_arcanum_ec2_sg. Adjust this output to match what you actually attach.
+
+# output "arcanum_private_ec2_security_group_ids" {
+#   description = "Security groups attached to the private EC2"
+#   value       = aws_instance.arc_bonus_ec2.vpc_security_group_ids
+# }
+
+# ############################################
+# # VPC Endpoints (IDs)
+# ############################################
+
+# output "vpce_s3_gateway_id" {
+#   description = "S3 Gateway VPC Endpoint ID"
+#   value       = aws_vpc_endpoint.arcanum_vpce_s3_gw01.id
+# }
+
+# output "vpce_sts_id" {
+#   description = "STS Interface VPC Endpoint ID"
+#   value       = aws_vpc_endpoint.arcanum_vpce_sts01.id
+# }
+
+# output "vpce_ssm_id" {
+#   description = "SSM Interface VPC Endpoint ID"
+#   value       = aws_vpc_endpoint.arcanum_vpce_ssm01.id
+# }
+
+# output "vpce_ec2messages_id" {
+#   description = "EC2Messages Interface VPC Endpoint ID"
+#   value       = aws_vpc_endpoint.arcanum_vpce_ec2messages01.id
+# }
+
+# output "vpce_ssmmessages_id" {
+#   description = "SSMMessages Interface VPC Endpoint ID"
+#   value       = aws_vpc_endpoint.arcanum_vpce_ssmmessages01.id
+# }
+
+# output "vpce_logs_id" {
+#   description = "CloudWatch Logs Interface VPC Endpoint ID"
+#   value       = aws_vpc_endpoint.arcanum_vpce_logs01.id
+# }
+
+# output "vpce_secretsmanager_id" {
+#   description = "Secrets Manager Interface VPC Endpoint ID"
+#   value       = aws_vpc_endpoint.arcanum_vpce_secrets01.id
+# }
+
+# output "vpce_kms_id" {
+#   description = "KMS Interface VPC Endpoint ID"
+#   value       = aws_vpc_endpoint.arcanum_vpce_kms01.id
+# }
+
+# ############################################
+# # Interface Endpoint DNS Names (super useful for verification)
+# ############################################
+
+# output "vpce_sts_dns_entries" {
+#   description = "STS Interface endpoint DNS entries"
+#   value       = aws_vpc_endpoint.arcanum_vpce_sts01.dns_entry
+# }
+
+# output "vpce_ssm_dns_entries" {
+#   description = "SSM Interface endpoint DNS entries"
+#   value       = aws_vpc_endpoint.arcanum_vpce_ssm01.dns_entry
+# }
+
+# output "vpce_ec2messages_dns_entries" {
+#   description = "EC2Messages Interface endpoint DNS entries"
+#   value       = aws_vpc_endpoint.arcanum_vpce_ec2messages01.dns_entry
+# }
+
+# output "vpce_ssmmessages_dns_entries" {
+#   description = "SSMMessages Interface endpoint DNS entries"
+#   value       = aws_vpc_endpoint.arcanum_vpce_ssmmessages01.dns_entry
+# }
+
+# output "vpce_logs_dns_entries" {
+#   description = "CloudWatch Logs Interface endpoint DNS entries"
+#   value       = aws_vpc_endpoint.arcanum_vpce_logs01.dns_entry
+# }
+
+# output "vpce_secretsmanager_dns_entries" {
+#   description = "Secrets Manager Interface endpoint DNS entries"
+#   value       = aws_vpc_endpoint.arcanum_vpce_secrets01.dns_entry
+# }
+
+# output "vpce_kms_dns_entries" {
+#   description = "KMS Interface endpoint DNS entries"
+#   value       = aws_vpc_endpoint.arcanum_vpce_kms01.dns_entry
+# }
+
+# ############################################
+# # IAM + Least Privilege Policies
+# ############################################
+
+# output "arcanum_role_name" {
+#   description = "Role name used by EC2"
+#   value       = aws_iam_role.arcanum_ec2_role01.name
+# }
+
+# output "arcanum_instance_profile_name" {
+#   description = "Instance profile created for private EC2"
+#   value       = aws_iam_instance_profile.arc_bonus_ec2.name
+# }
+
+# output "arcanum_lp_params_policy_arn" {
+#   description = "Least-privilege SSM Parameter Store read policy ARN"
+#   value       = aws_iam_policy.arcanum_leastpriv_read_params01.arn
+# }
+
+# output "arcanum_lp_secret_policy_arn" {
+#   description = "Least-privilege Secrets Manager read policy ARN"
+#   value       = aws_iam_policy.arcanum_leastpriv_read_secret01.arn
+# }
+
+# output "arcanum_lp_cwlogs_policy_arn" {
+#   description = "Least-privilege CloudWatch Logs write policy ARN"
+#   value       = aws_iam_policy.arcanum_leastpriv_cwlogs01.arn
+# }
+
+# ############################################
+# # Secrets (verification helpers)
+# ############################################
+
+# output "arcanum_secret_arn_guess" {
+#   description = "Wildcard guess for the secret ARN (use real ARN after apply)"
+#   value       = local.arcanum_secret_arn_guess
+# }
+
+# ############################################
+# # CloudWatch Log Group
+# ############################################
+
+# # terr
+
+# # output "arcanum_log_group_arn" {
+# #   description = "CloudWatch log group ARN"
+# #   value       = aws_cloudwatch_log_group.arcanum_log_group01.arn
+# # }
+
+# # BONUS B Outputs
+
+
+# # Explanation: Outputs are the mission coordinates — where to point your browser and your blasters.
+
+# # # Explanation: These outputs prove Arcanum built private hyperspace lanes (endpoints) instead of public chaos.
+
+# output "arcanum_vpce_ssm_id" {
+#   value = aws_vpc_endpoint.arcanum_vpce_ssm01.id
+# }
+
+# output "arcanum_vpce_logs_id" {
+#   value = aws_vpc_endpoint.arcanum_vpce_logs01.id
+# }
+
+# output "arcanum_vpce_secrets_id" {
+#   value = aws_vpc_endpoint.arcanum_vpce_secrets01.id
+# }
+
+# output "arcanum_vpce_s3_id" {
+#   value = aws_vpc_endpoint.arcanum_vpce_s3_gw01.id
+# }
+
+# # 🔧 FIXED: correct EC2 resource name from Bonus-A
+# output "arcanum_private_ec2_instance_id_bonus" {
+#   value = aws_instance.arc_bonus_ec2.id
+# }
+
+# output "arcanum_alb_dns_name" {
+#   value = aws_lb.arcanum_alb01.dns_name
+# }
+
+# output "arcanum_app_fqdn" {
+#   value = "${var.app_subdomain}.${var.domain_name}"
+# }
+
+# output "arcanum_target_group_arn" {
+#   value = aws_lb_target_group.arcanum_tg01.arn
+# }
+
+# output "arcanum_acm_cert_arn" {
+#   value = aws_acm_certificate.arcanum_acm_cert01.arn
+# }
+
+# output "arcanum_waf_arn" {
+#   value = var.enable_waf ? aws_wafv2_web_acl.arcanum_waf01[0].arn : null
+# }
+
+# output "arcanum_dashboard_name" {
+#   value = aws_cloudwatch_dashboard.arcanum_dashboard01.dashboard_name
+# }
+
+
+# output "arcanum_route53_zone_id" {
+#   value = local.arcanum_zone_id
+# }
+
+# output "arcanum_app_url_https" {
+#   value = "https://${var.app_subdomain}.${var.domain_name}"
+# }
+
+# output "arcanum_apex_url_https" {
+#   value = "https://${var.domain_name}"
+# }
+
+# output "arcanum_alb_logs_bucket_name" {
+#   value = var.enable_alb_access_logs ? aws_s3_bucket.arcanum_alb_logs_bucket01[0].bucket : null
+# }
+
+# output "arcanum_origin_header_value" {
+#   value     = var.enable_origin_cloaking ? random_password.arcanum_origin_header_value01.result : null
+#   sensitive = true
+# }

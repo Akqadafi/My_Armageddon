@@ -1,0 +1,80 @@
+# # BONUS B Outputs
+
+
+# # Explanation: Outputs are the mission coordinates — where to point your browser and your blasters.
+
+# # Explanation: These outputs prove Arcanum built private hyperspace lanes (endpoints) instead of public chaos.
+
+# output "arcanum_vpce_ssm_id" {
+#   value = aws_vpc_endpoint.arcanum_vpce_ssm01.id
+# }
+
+# output "arcanum_vpce_logs_id" {
+#   value = aws_vpc_endpoint.arcanum_vpce_logs01.id
+# }
+
+# output "arcanum_vpce_secrets_id" {
+#   value = aws_vpc_endpoint.arcanum_vpce_secrets01.id
+# }
+
+# output "arcanum_vpce_s3_id" {
+#   value = aws_vpc_endpoint.arcanum_vpce_s3_gw01.id
+# }
+
+# # # 🔧 FIXED: correct EC2 resource name from Bonus-A
+# # output "arcanum_private_ec2_instance_id_bonus" {
+# #   value = aws_instance.arc_bonus_ec2.id
+# # }
+
+# output "arcanum_alb_dns_name" {
+#   value = aws_lb.arcanum_alb01.dns_name
+# }
+
+# output "arcanum_app_fqdn" {
+#   value = "${var.app_subdomain}.${var.domain_name}"
+# }
+
+# output "arcanum_target_group_arn" {
+#   value = aws_lb_target_group.arcanum_tg01.arn
+# }
+
+# output "arcanum_acm_cert_arn" {
+#   value = aws_acm_certificate.arcanum_acm_cert01.arn
+# }
+
+# output "arcanum_waf_arn" {
+#   value = var.enable_waf ? aws_wafv2_web_acl.arcanum_waf01[0].arn : null
+# }
+
+# output "arcanum_dashboard_name" {
+#   value = aws_cloudwatch_dashboard.arcanum_dashboard01.dashboard_name
+# }
+
+
+# output "arcanum_route53_zone_id" {
+#   value = local.arcanum_zone_id
+# }
+
+# output "arcanum_app_url_https" {
+#   value = "https://${var.app_subdomain}.${var.domain_name}"
+# }
+
+# output "arcanum_apex_url_https" {
+#   value = "https://${var.domain_name}"
+# }
+
+# output "arcanum_alb_logs_bucket_name" {
+#   value = var.enable_alb_access_logs ? aws_s3_bucket.arcanum_alb_logs_bucket01[0].bucket : null
+# }
+
+# output "arcanum_origin_header_value" {
+#   value     = var.enable_origin_cloaking ? random_password.arcanum_origin_header_value01.result : null
+#   sensitive = true
+# }
+# output "arcanum_route53_zone_id" {
+#   value = local.arcanum_zone_id
+# }
+
+# output "arcanum_app_url_https" {
+#   value = "https://${var.app_subdomain}.${var.domain_name}"
+# }

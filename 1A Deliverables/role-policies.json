@@ -1,0 +1,6 @@
+{
+    "PolicyNames": [
+        "EC2SecretsRead"
+    ]
+}
+

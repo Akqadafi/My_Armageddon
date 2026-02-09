@@ -1,0 +1,504 @@
+  856  terraform output
+  857  terraform output json
+  858  pwd
+  859  tergrep -R --line-number '^output "' .
+  860  grep -R --line-number '^output "' .
+  861  terraform show -json > state.json
+  862  touch outputs_clean.tf
+  863  ############################################
+  864  # outputs.tf — CLEAN (Core + Bonus A + Bonus B)
+  865  ############################################
+  866  ############################################
+  867  # Core networking + app resources
+  868  ############################################
+  869  output "arcanum_region" {
+  870    description = "AWS region used by this deployment"
+  871    value       = var.aws_region
+  872  }
+  873  output "arcanum_vpc_id" {
+  874    description = "VPC ID"
+  875    value       = aws_vpc.arcanum_vpc01.id
+  876  }
+  877  output "arcanum_public_subnet_ids" {
+  878    description = "Public subnet IDs"
+  879    value       = aws_subnet.arcanum_public_subnets[*].id
+  880  }
+  881  output "arcanum_private_subnet_ids" {
+  882    description = "Private subnet IDs"
+  883    value       = aws_subnet.arcanum_private_subnets[*].id
+  884  }
+  885  output "arcanum_private_subnet_id" {
+  886    description = "Primary private subnet (index 0) used for private EC2 + endpoints"
+  887    value       = aws_subnet.arcanum_private_subnets[0].id
+  888  }
+  889  output "arcanum_ec2_instance_id" {
+  890    description = "Public EC2 instance ID (if you have one)"
+  891    value       = aws_instance.arcanum_ec201.id
+  892  }
+  893  output "arcanum_rds_endpoint" {
+  894    description = "RDS endpoint address"
+  895    value       = aws_db_instance.arcanum_rds01.address
+  896  }
+  897  output "lab_secret_name" {
+  898    description = "Secrets Manager secret name"
+  899    value       = aws_secretsmanager_secret.arcanum_db_secret01.name
+  900  }
+  901  output "lab_secret_arn" {
+  902    description = "Secrets Manager secret ARN"
+  903    value       = aws_secretsmanager_secret.arcanum_db_secret01.arn
+  904  }
+  905  output "arcanum_sns_topic_arn" {
+  906    description = "SNS topic ARN for incidents"
+  907    value       = aws_sns_topic.arcanum_sns_topic01.arn
+  908  }
+  909  output "arcanum_log_group_name" {
+  910    description = "CloudWatch log group name"
+  911    value       = aws_cloudwatch_log_group.arcanum_log_group01.name
+  912  }
+  913  ############################################
+  914  # Bonus A — Private EC2 + VPC Endpoints
+  915  ############################################
+  916  output "arcanum_private_instance_id" {
+  917    description = "Private EC2 instance ID (Session Manager target)"
+  918    value       = aws_instance.arc_bonus_ec2.id
+  919  }
+  920  output "arcanum_private_instance_private_ip" {
+  921    description = "Private EC2 private IP"
+  922    value       = aws_instance.arc_bonus_ec2.private_ip
+  923  }
+  924  output "arcanum_private_instance_iam_instance_profile" {
+  925    description = "Instance profile attached to private EC2"
+  926    value       = aws_instance.arc_bonus_ec2.iam_instance_profile
+  927  }
+  928  output "arcanum_ssm_start_session_command" {
+  929    description = "Command to open an SSM Session Manager shell"
+  930    value       = "aws ssm start-session --target ${aws_instance.arc_bonus_ec2.id} --region ${var.aws_region}"
+  931  }
+  932  output "arcanum_vpce_security_group_id" {
+  933    description = "Security group applied to Interface VPC Endpoints"
+  934    value       = aws_security_group.arcanum_vpce_sg01.id
+  935  }
+  936  output "arcanum_private_ec2_security_group_ids" {
+  937    description = "Security group IDs attached to the private EC2"
+  938    value       = aws_instance.arc_bonus_ec2.vpc_security_group_ids
+  939  }
+  940  ############################################
+  941  # VPC Endpoints — IDs (canonical set)
+  942  ############################################
+  943  output "vpce_s3_gateway_id" {
+  944    description = "S3 Gateway VPC Endpoint ID"
+  945    value       = aws_vpc_endpoint.arcanum_vpce_s3_gw01.id
+  946  }
+  947  output "vpce_sts_id" {
+  948    description = "STS Interface VPC Endpoint ID"
+  949    value       = aws_vpc_endpoint.arcanum_vpce_sts01.id
+  950  }
+  951  output "vpce_ssm_id" {
+  952    description = "SSM Interface VPC Endpoint ID"
+  953    value       = aws_vpc_endpoint.arcanum_vpce_ssm01.id
+  954  }
+  955  output "vpce_ec2messages_id" {
+  956    description = "EC2Messages Interface VPC Endpoint ID"
+  957    value       = aws_vpc_endpoint.arcanum_vpce_ec2messages01.id
+  958  }
+  959  output "vpce_ssmmessages_id" {
+  960    description = "SSMMessages Interface VPC Endpoint ID"
+  961    value       = aws_vpc_endpoint.arcanum_vpce_ssmmessages01.id
+  962  }
+  963  output "vpce_logs_id" {
+  964    description = "CloudWatch Logs Interface VPC Endpoint ID"
+  965    value       = aws_vpc_endpoint.arcanum_vpce_logs01.id
+  966  }
+  967  output "vpce_secretsmanager_id" {
+  968    description = "Secrets Manager Interface VPC Endpoint ID"
+  969    value       = aws_vpc_endpoint.arcanum_vpce_secrets01.id
+  970  }
+  971  output "vpce_kms_id" {
+  972    description = "KMS Interface VPC Endpoint ID"
+  973    value       = aws_vpc_endpoint.arcanum_vpce_kms01.id
+  974  }
+  975  ############################################
+  976  # VPC Endpoints — DNS entries (verification helpers)
+  977  ############################################
+  978  output "vpce_sts_dns_entries" {
+  979    description = "STS Interface endpoint DNS entries"
+  980    value       = aws_vpc_endpoint.arcanum_vpce_sts01.dns_entry
+  981  }
+  982  output "vpce_ssm_dns_entries" {
+  983    description = "SSM Interface endpoint DNS entries"
+  984    value       = aws_vpc_endpoint.arcanum_vpce_ssm01.dns_entry
+  985  }
+  986  output "vpce_ec2messages_dns_entries" {
+  987    description = "EC2Messages Interface endpoint DNS entries"
+  988    value       = aws_vpc_endpoint.arcanum_vpce_ec2messages01.dns_entry
+  989  }
+  990  output "vpce_ssmmessages_dns_entries" {
+  991    description = "SSMMessages Interface endpoint DNS entries"
+  992    value       = aws_vpc_endpoint.arcanum_vpce_ssmmessages01.dns_entry
+  993  }
+  994  output "vpce_logs_dns_entries" {
+  995    description = "CloudWatch Logs Interface endpoint DNS entries"
+  996    value       = aws_vpc_endpoint.arcanum_vpce_logs01.dns_entry
+  997  }
+  998  output "vpce_secretsmanager_dns_entries" {
+  999    description = "Secrets Manager Interface endpoint DNS entries"
+ 1000    value       = aws_vpc_endpoint.arcanum_vpce_secrets01.dns_entry
+ 1001  }
+ 1002  output "vpce_kms_dns_entries" {
+ 1003    description = "KMS Interface endpoint DNS entries"
+ 1004    value       = aws_vpc_endpoint.arcanum_vpce_kms01.dns_entry
+ 1005  }
+ 1006  ############################################
+ 1007  # IAM + policies
+ 1008  ############################################
+ 1009  output "arcanum_role_name" {
+ 1010    description = "Role name used by EC2"
+ 1011    value       = aws_iam_role.arcanum_ec2_role01.name
+ 1012  }
+ 1013  output "arcanum_instance_profile_name" {
+ 1014    description = "Instance profile created for private EC2"
+ 1015    value       = aws_iam_instance_profile.arc_bonus_ec2.name
+ 1016  }
+ 1017  output "arcanum_lp_params_policy_arn" {
+ 1018    description = "Least-privilege SSM Parameter Store read policy ARN"
+ 1019    value       = aws_iam_policy.arcanum_leastpriv_read_params01.arn
+ 1020  }
+ 1021  output "arcanum_lp_secret_policy_arn" {
+ 1022    description = "Least-privilege Secrets Manager read policy ARN"
+ 1023    value       = aws_iam_policy.arcanum_leastpriv_read_secret01.arn
+ 1024  }
+ 1025  output "arcanum_lp_cwlogs_policy_arn" {
+ 1026    description = "Least-privilege CloudWatch Logs write policy ARN"
+ 1027    value       = aws_iam_policy.arcanum_leastpriv_cwlogs01.arn
+ 1028  }
+ 1029  output "arcanum_secret_arn_guess" {
+ 1030    description = "Wildcard guess for the secret ARN (use real ARN after apply)"
+ 1031    value       = local.arcanum_secret_arn_guess
+ 1032  }
+ 1033  ############################################
+ 1034  # Bonus B — ALB + TLS + WAF + Route53 + Monitoring
+ 1035  ############################################
+ 1036  output "arcanum_alb_dns_name" {
+ 1037    description = "ALB DNS name"
+ 1038    value       = aws_lb.arcanum_alb01.dns_name
+ 1039  }
+ 1040  output "arcanum_app_fqdn" {
+ 1041    description = "App FQDN (e.g., app.arcanum-base.click)"
+ 1042    value       = "${var.app_subdomain}.${var.domain_name}"
+ 1043  }
+ 1044  output "arcanum_target_group_arn" {
+ 1045    description = "Target group ARN for the ALB forward action"
+ 1046    value       = aws_lb_target_group.arcanum_tg01.arn
+ 1047  }
+ 1048  output "arcanum_acm_cert_arn" {
+ 1049    description = "ACM certificate ARN"
+ 1050    value       = aws_acm_certificate.arcanum_acm_cert01.arn
+ 1051  }
+ 1052  output "arcanum_waf_arn" {
+ 1053    description = "WAF Web ACL ARN (null if WAF disabled)"
+ 1054    value       = var.enable_waf ? aws_wafv2_web_acl.arcanum_waf01[0].arn : null
+ 1055  }
+ 1056  output "arcanum_dashboard_name" {
+ 1057    description = "CloudWatch dashboard name"
+ 1058    value       = aws_cloudwatch_dashboard.arcanum_dashboard01.dashboard_name
+ 1059  }
+ 1060  output "arcanum_route53_zone_id" {
+ 1061    description = "Route53 hosted zone ID"
+ 1062    value       = local.arcanum_zone_id
+ 1063  }
+ 1064  output "arcanum_app_url_https" {
+ 1065    description = "App HTTPS URL"
+ 1066    value       = "https://${var.app_subdomain}.${var.domain_name}"
+ 1067  }
+ 1068  output "arcanum_apex_url_https" {
+ 1069    description = "Apex HTTPS URL"
+ 1070    value       = "https://${var.domain_name}"
+ 1071  }
+ 1072  output "arcanum_alb_logs_bucket_name" {
+ 1073    description = "ALB access logs bucket name (null if disabled)"
+ 1074    value       = var.enable_alb_access_logs ? aws_s3_bucket.arcanum_alb_logs_bucket01[0].bucket : null
+ 1075  }
+ 1076  output "arcanum_origin_header_value" {
+ 1077    description = "Origin cloaking header value (sensitive, null if disabled)"
+ 1078    value       = var.enable_origin_cloaking ? random_password.arcanum_origin_header_value01.result : null
+ 1079    sensitive   = true
+ 1080  }
+ 1081  terraform output -json
+ 1082  terraform output
+ 1083  output "arcanum_route53_zone_id" {
+ 1084    value = local.arcanum_zone_id
+ 1085  aws route53 list-hosted-zones-by-name     --dns-name arcanum-base.click     --query "HostedZones[].Id"
+ 1086    aws route53 list-resource-record-sets   --hosted-zone-id Z001663926IWG5SDJP0E3   --query "ResourceRecordSets[?Name=='app.arcanum-base.click.']"
+ 1087  aws route53 list-resource-record-sets   --hosted-zone-id Z05472551N7DN9RT8Z09A   --query "ResourceRecordSets[?Name=='app.arcanum-base.click.']"
+ 1088  CERT_ARN=$(terraform output -raw arcanum_acm_cert_arn)
+ 1089  echo "$CERT_ARN"
+ 1090  terraform output -json | head -c 500
+ 1091  pwd
+ 1092  ls -la
+ 1093  terraform state list | head
+ 1094  terraform output -json | head -c 500
+ 1095  grep -R --line-number 'output "arcanum_acm_cert_arn"' .
+ 1096  CERT_ARN="arn:aws:acm:us-east-1:233781468925:certificate/a631041e-5946-4984-b39f-13a3e572f77d"
+ 1097  aws acm describe-certificate   --region us-east-1   --certificate-arn "$CERT_ARN"   --query "Certificate.Status"   --output text
+ 1098  curl -I https://app.arcanum-base.click
+ 1099  aws route53 list-hosted-zones-by-name   --dns-name arcanum-base.click   --query "HostedZones[].{Id:Id,Name:Name,Private:Config.PrivateZone}"   --output table
+ 1100  aws route53 list-resource-record-sets   --hosted-zone-id Z05472551N7DN9RT8Z09A   --query "ResourceRecordSets[?Name=='app.arcanum-base.click.']"   --output json
+ 1101  CERT_ARN="arn:aws:acm:us-east-1:233781468925:certificate/a631041e-5946-4984-b39f-13a3e572f77d"
+ 1102  aws acm describe-certificate   --region us-east-1   --certificate-arn "$CERT_ARN"   --query "Certificate.Status"   --output text
+ 1103  curl -I https://app.arcanum-base.click
+ 1104  nslookup app.arcanum-base.click
+ 1105  aws route53 get-hosted-zone   --id Z05472551N7DN9RT8Z09A   --query "DelegationSet.NameServers"   --output table
+ 1106  aws route53 get-hosted-zone   --id Z05472551N7DN9RT8Z09A   --query "DelegationSet.NameServers"   --output table
+ 1107  aws route53 get-hosted-zone --id Z001663926IWG5SDJP0E3   --query "DelegationSet.NameServers" --output table
+ 1108  aws route53 get-hosted-zone --id Z05472551N7DN9RT8Z09A   --query "DelegationSet.NameServers" --output table
+ 1109    # ✅ Prefer referencing the cert itself (simpler lifecycle)
+ 1110    certificate_arn = aws_acm_certificate.arcanum_acm_cert01.arn
+ 1111  aws acm list-certificates --region us-east-1
+ 1112  terraform init
+ 1113  terraform validate
+ 1114  terraform validate
+ 1115  terraform validate
+ 1116  terraform validate
+ 1117  pwd
+ 1118  ls
+ 1119  ls *.tf
+ 1120  terraform init
+ 1121  terraform refressh
+ 1122  terraform refresh
+ 1123  terraform state list
+ 1124  terraform show > state_dump.txt
+ 1125  git status
+ 1126  dir *.tfstate
+ 1127  terraform state list
+ 1128  terraform fmt -recursive
+ 1129  terraform validate
+ 1130   Error: Missing required provider
+ 1131  │
+ 1132  │ This configuration requires provider registry.terraform.io/hashicorp/random, but that provider isn't available. You may be able to 
+│ install it automatically by running:
+│   terraform init
+╵
+exit
+ 1133  terraform init
+ 1134  terraform validate
+ 1135  terraform validate
+ 1136  dir*.tf
+ 1137  dir *.tf
+ 1138  terraform state list
+ 1139  mv outputs.tf outputs.tf.bak
+ 1140  mv outputs_A.tf outputs_A.tf.bak
+ 1141  terraform validate
+ 1142  mv outputs_Bonus_B output_Bonus_B.tf.bak
+ 1143  terraform validate
+ 1144  terraform validate
+ 1145  pwd
+ 1146  ls
+ 1147  mv bonus_b_Old.tf bonus_b_Old.tf.bak
+ 1148  terraform fmt -recursive
+ 1149  terraform validate
+ 1150  grep -R "resource \"aws_s3_bucket\"" -n *.tf
+ 1151  ls -li
+ 1152  grep -R 'resource "aws_s3_bucket"' -n *.tf
+ 1153  terraform validate
+ 1154  terraform validate
+ 1155  touch bonus_b_alb_access_logs.tf
+ 1156  terraform init
+ 1157  terraform init
+ 1158  terraform validate
+ 1159  terraform plan
+ 1160  terraform plan
+ 1161  terraform plan
+ 1162  grep -R "aws_lb_listener_rule" -n .
+ 1163  terraform plan
+ 1164  terraform plan
+ 1165  terraform apply
+ 1166  terraform apply
+ 1167  terraform apply
+ 1168  terraform apply
+ 1169  terraform apply
+ 1170  curl -I https://rds.us-east-1.amazonaws.com/
+ 1171  terraform apply
+ 1172  terraform apply
+ 1173  terraform plan
+ 1174  terraform apply
+ 1175  curl -I https://arcanum-alb01-1621613657.us-east-1.elb.amazonaws.com
+ 1176  curl -Ik https://arcanum-alb01-1621613657.us-east-1.elb.amazonaws.com
+ 1177  curl -I https://arcanum-base.click
+ 1178  curl -I https://app.arcanum-base.click
+ 1179  aws wafv2 get-web-acl   --name arcanum-cf-waf01   --scope CLOUDFRONT   --id 0c687090-6799-4521-92ac-a7d003292f9c
+ 1180  aws wafv2 get-web-acl   --name arcanum-cf-waf01   --scope CLOUDFRONT   --id 0c687090-6799-4521-92ac-a7d003292f9c
+ 1181  dig arcanum-base.click A +short
+ 1182  dig app.arcanum-base.click A +short
+ 1183  curl -k -I https://arcanum-alb01-1621613657.us-east-1.elb.amazonaws.com
+ 1184  curl -I https://app.arcanum-base.click
+ 1185  python malgus_waf_block_spike_detector.py
+ 1186  python malgus_cloudfront_cache_probe.py https://app.arcanum-base.click
+ 1187  python malgus_logsinsights_runner.py
+ 1188  python malgus_logsinsights_runner.py
+ 1189  usage: malgus_logsinsights_runner.py [-h] --log-group LOG_GROUP [--minutes MINUTES] --query QUERY
+ 1190  malgus_logsinsights_runner.py: error: the following arguments are required: --log-group, --query
+ 1191  python malgus_logsinsights_runner.py   --log-group "/aws/ec2/arcanum-rds-app"   --minutes 30   --query "fields @timestamp, @message | sort @timestamp desc | limit 20"
+ 1192  touch whoami.py
+ 1193  python whoami.py
+ 1194  env | grep AWS
+ 1195  aws configure list
+ 1196  aws configure list-profiles
+ 1197  [200~aws sts get-caller-identity
+ 1198  ~aws sts get-caller-identity
+ 1199  aws sts get-caller-identity
+ 1200  python malgus_logsinsights_runner.py   --log-group "/aws/ec2/arcanum-rds-app"   --minutes 30   --query "fields @timestamp, @message | sort @timestamp desc | limit 20"
+ 1201  python malgus_logsinsights_runner.py   --log-group "/aws/ec2/arcanum-rds-app"   --minutes 30   --query "fields @timestamp, @message | sort @timestamp desc | limit 20"
+ 1202  python malgus_loginsights_runner.py
+ 1203  python malgus_logsinsights_runnner.py
+ 1204  python malgus_logsinsights_runner.py
+ 1205  python malgus_logsinsights_runner.py   --log-group "/aws/ec2/arcanum-rds-app"   --minutes 30   --query "fields @timestamp, @message | sort @timestamp desc | limit 20"
+ 1206   python malgus_logsinsights_runner.py   --log-group "/aws/ec2/arcanum-rds-app"   --minutes 30   --query "fields @timestamp, @message | sort @timestamp desc | limit 20"
+ 1207  python malgus_logsinsights_runner.py   --log-group "/aws/ec2/arcanum-rds-app"   --minutes 30   --query "fields @timestamp, @message | sort @timestamp desc | limit 20"
+ 1208  aws logs describe-log-groups --log-group-name-prefix "/aws/ec2/arcanum" --region us-east-1
+ 1209  python malgus_logsinsights_runner.py   --log-group "/aws/ec2/arcanum-rds-app"   --minutes 30   --query "fields @timestamp, @message | sort @timestamp desc | limit 20"
+ 1210  MSYS2_ARG_CONV_EXCL="*" aws logs describe-log-groups   --log-group-name-prefix "/aws/ec2/arcanum"   --region us-east-1
+ 1211  python malgus_logsinsights_runner.py   --log-group "/aws/ec2/arcanum-rds-app"   --minutes 30   --query "fields @timestamp, @message | sort @timestamp desc | limit 20"
+ 1212  MSYS2_ARG_CONV_EXCL="*" python malgus_logsinsights_runner.py   --log-group "/aws/ec2/arcanum-rds-app"   --minutes 30   --query "fields @timestamp, @message | sort @timestamp desc | limit 20"
+ 1213  python malgus_logsinsights_runner.py   --log-group "/aws/ec2/arcanum-rds-app"   --minutes 30   --query "fields @timestamp, @message | sort @timestamp desc | limit 20"
+ 1214  aws sts get-caller-identity --region us-east-1
+ 1215  MSYS2_ARG_CONV_EXCL="*" aws logs describe-log-streams   --log-group-name "/aws/ec2/arcanum-rds-app"   --order-by LastEventTime   --descending   --max-items 5   --region us-east-1
+ 1216  MSYS2_ARG_CONV_EXCL="*" python malgus_logsinsights_runner.py   --log-group "/aws/ec2/arcanum-rds-app"   --minutes 30   --query "fields @timestamp, @message | sort @timestamp desc | limit 20"
+ 1217  chmod +x run_all_gates.sh
+ 1218  chmod +x run_all_gates.sh
+ 1219  ./run_all_gates.sh
+ 1220  terraform validate
+ 1221  terraform validate
+ 1222  terraform plan
+ 1223  terraform validate
+ 1224  terraform validate
+ 1225  terraform validate
+ 1226  terraform validate
+ 1227  terraform validate
+ 1228  terraform plan
+ 1229  terraform validate
+ 1230  terraform validate
+ 1231  terraform validate
+ 1232  terraform validate
+ 1233  terraform plan
+ 1234  terraform apply
+ 1235  terraform status
+ 1236  terraform state
+ 1237  terraform statelist
+ 1238  terraform state list
+ 1239  terraform output
+ 1240  MSYS2_ARG_CONV_EXCL="*" aws route53 list-resource-record-sets   --hosted-zone-id "Z001663926IWG5SDJP0E3"   --query "ResourceRecordSets[?Name=='arcanum-base.click.']"   --output table
+ 1241  aws elbv2 describe-load-balancers   --names "arcanum-alb01"   --region "us-east-1"   --query "LoadBalancers[0].LoadBalancerArn"   --output text
+ 1242  aws elbv2 describe-load-balancer-attributes   --load-balancer-arn "arn:aws:elasticloadbalancing:us-east-1:233781468925:loadbalancer/app/arcanum-alb01/828dc9c10c4591fd"   --region "us-east-1"   --query "Attributes[?Key=='access_logs.s3.enabled' || Key=='access_logs.s3.bucket' || Key=='access_logs.s3.prefix']"   --output table
+ 1243  curl -I https://arcanum-base.click
+ 1244  curl -I https://app.arcanum-base.click
+ 1245  for i in {1..15}; do curl -s -o /dev/null -I https://app.arcanum-base.click; done
+ 1246  aws s3 ls "s3://arcanum-alb-logs-233781468925/" --recursive | head -n 50
+ 1247  aws sts get-caller-identity
+ 1248  aws s3api head-bucket --bucket "arcanum-alb-logs-233781468925"
+ 1249  MSYS2_ARG_CONV_EXCL="*" aws route53 list-resource-record-sets   --hosted-zone-id "Z001663926IWG5SDJP0E3"   --query "ResourceRecordSets[?Name=='arcanum-base.click.' && (Type=='A' || Type=='AAAA')]"   --output json
+ 1250  MSYS2_ARG_CONV_EXCL="*" aws route53 list-resource-record-sets   --hosted-zone-id "Z001663926IWG5SDJP0E3"   --query "ResourceRecordSets[?Name=='app.arcanum-base.click.']"   --output json
+ 1251  aws elbv2 describe-load-balancers   --load-balancer-arns "arn:aws:elasticloadbalancing:us-east-1:233781468925:loadbalancer/app/arcanum-alb01/828dc9c10c4591fd"   --query "LoadBalancers[0].CanonicalHostedZoneId"   --output text
+ 1252  aws s3api list-buckets --query "Buckets[].Name" --output text | tr '\t' '\n' | grep arcanum
+ 1253  terraform state list | grep s3
+ 1254  aws s3api head-bucket --bucket "arcanum-alb-logs-233781468925"
+ 1255  terraform validate
+ 1256  terraform validate
+ 1257  terraform plan
+ 1258  terraform validate
+ 1259  terraform plan
+ 1260  terraform plan
+ 1261  terraform validate
+ 1262  terraform plan
+ 1263  terraform state
+ 1264  terraform state list | grep waf
+ 1265  terraform validate
+ 1266  terraform plan
+ 1267  terraform apply
+ 1268  MSYS2_ARG_CONV_EXCL="*" aws route53 list-resource-record-sets   --hosted-zone-id "Z001663926IWG5SDJP0E3"   --query "ResourceRecordSets[?Name=='arcanum-base.click.' && (Type=='A' || Type=='AAAA')]"   --output table
+ 1269  MSYS2_ARG_CONV_EXCL="*" aws route53 list-resource-record-sets   --hosted-zone-id "Z001663926IWG5SDJP0E3"   --query "ResourceRecordSets[?Name=='app.arcanum-base.click.' && (Type=='A' || Type=='AAAA')]"   --output table
+ 1270  aws s3api head-bucket --bucket "arcanum-alb-logs-233781468925"
+ 1271  aws s3 ls "s3://arcanum-alb-logs-233781468925/"
+ 1272  curl -I https://arcanum-base.click
+ 1273  curl -I https://app.arcanum-base.click
+ 1274  aws s3 ls "s3://arcanum-alb-logs-233781468925/alb-access-logs/AWSLogs/233781468925/elasticloadbalancing/" --recursive | head
+ 1275  aws s3 ls "s3://arcanum-alb-logs-233781468925/alb-access-logs/AWSLogs/233781468925/elasticloadbalancing/" --recursive | head
+ 1276  export REGION="us-east-1"
+ 1277  export ACCOUNT_ID="233781468925"
+ 1278  export ZONE_ID="Z001663926IWG5SDJP0E3"
+ 1279  export ALB_NAME="arcanum-alb01"
+ 1280  export ALB_ARN="arn:aws:elasticloadbalancing:us-east-1:233781468925:loadbalancer/app/arcanum-alb01/828dc9c10c4591fd"
+ 1281  export ALB_DNS="arcanum-alb01-1621613657.us-east-1.elb.amazonaws.com"
+ 1282  export ALB_LOG_BUCKET="arcanum-alb-logs-233781468925"
+ 1283  export ALB_LOG_PREFIX="alb-access-logs"
+ 1284  export APEX_FQDN="arcanum-base.click."
+ 1285  export APP_FQDN="app.arcanum-base.click."
+ 1286  export APEX_URL="https://arcanum-base.click"
+ 1287  export APP_URL="https://app.arcanum-base.click"
+ 1288  export ACM_CERT_ARN="arn:aws:acm:us-east-1:233781468925:certificate/a631041e-5946-4984-b39f-13a3e572f77d"
+ 1289  export WAF_ARN="arn:aws:wafv2:us-east-1:233781468925:regional/webacl/arcanum-waf01/acc2b12d-670d-43b2-9d15-b3d2375bc008"
+ 1290  export WAF_LOG_GROUP="aws-waf-logs-arcanum-webacl01"
+ 1291  MSYS2_ARG_CONV_EXCL="*" aws route53 list-resource-record-sets   --hosted-zone-id "$ZONE_ID"   --query "ResourceRecordSets[?Name=='$APEX_FQDN' && Type=='A']"   --output json
+ 1292  aws elbv2 describe-load-balancer-attributes   --load-balancer-arn "$ALB_ARN"   --region "$REGION"   --query "Attributes[?Key=='access_logs.s3.enabled' || Key=='access_logs.s3.bucket' || Key=='access_logs.s3.prefix']"   --output table
+ 1293  aws s3api head-bucket --bucket "$ALB_LOG_BUCKET"
+ 1294  curl -I "$APEX_URL"
+ 1295  curl -I "$APP_URL"
+ 1296  aws s3 ls "s3://$ALB_LOG_BUCKET/$ALB_LOG_PREFIX/AWSLogs/$ACCOUNT_ID/elasticloadbalancing/" --recursive | head
+ 1297  aws wafv2 get-logging-configuration   --region "$REGION"   --resource-arn "$WAF_ARN"
+ 1298  curl -I "$APEX_URL/"
+ 1299  curl -I "$APP_URL/"
+ 1300  aws logs describe-log-streams   --region "$REGION"   --log-group-name "$WAF_LOG_GROUP"   --order-by LastEventTime   --descending   --max-items 5
+ 1301  aws logs filter-log-events   --region "$REGION"   --log-group-name "$WAF_LOG_GROUP"   --max-items 20
+ 1302  aws acm describe-certificate   --region us-east-1   --certificate-arn arn:aws:acm:us-east-1:233781468925:certificate/a631041e-5946-4984-b39f-13a3e572f77d   --query "Certificate.{DomainName:DomainName,SANs:SubjectAlternativeNames,Status:Status}"   --output json
+ 1303  aws s3api get-bucket-policy   --bucket arcanum-alb-logs-233781468925   --query Policy   --output text
+ 1304  aws s3 ls s3://arcanum-alb-logs-233781468925/ --recursive | head -n 50
+ 1305  terraform validate
+ 1306  terraform validate
+ 1307  terraform plan
+ 1308  terraform validate
+ 1309  terraform plan
+ 1310  terraform apply
+ 1311  aws acm describe-certificate   --region us-east-1   --certificate-arn arn:aws:acm:us-east-1:233781468925:certificate/30c9a543-3cfb-49dc-816e-53879c2dfbfb   --query "Certificate.{Status:Status,DomainName:DomainName,SANs:SubjectAlternativeNames,KeyAlgorithm:KeyAlgorithm,SignatureAlgorithm:SignatureAlgorithm}"
+ 1312  terraform validate
+ 1313  terraform plan
+ 1314  terraform apply
+ 1315  aws elbv2 describe-listeners --load-balancer-arn "$ALB_ARN"   --query "Listeners[?Port==\`443\`].Certificates"
+ 1316  MSYS2_ARG_CONV_EXCL="*" aws route53 list-resource-record-sets   --hosted-zone-id "$ZONE_ID"   --query "ResourceRecordSets[?Name=='$APP_FQDN' && Type=='A']"   --output json
+ 1317  MSYS2_ARG_CONV_EXCL="*" aws route53 list-resource-record-sets   --hosted-zone-id "$ZONE_ID"   --query "ResourceRecordSets[?Name=='$APEX_FQDN' && Type=='A'].[Name,AliasTarget.DNSName,AliasTarget.HostedZoneId]"   --output table
+ 1318  aws elbv2 describe-load-balancer-attributes   --load-balancer-arn "$ALB_ARN"   --region "$REGION"   --query "Attributes[?Key=='access_logs.s3.enabled' || Key=='access_logs.s3.bucket' || Key=='access_logs.s3.prefix']"   --output table
+ 1319  curl -I "$APEX_URL"
+ 1320  curl -I "$APP_URL"
+ 1321  aws s3 ls "s3://$ALB_LOG_BUCKET/$ALB_LOG_PREFIX/AWSLogs/$ACCOUNT_ID/elasticloadbalancing/" --recursive | head
+ 1322  aws wafv2 get-logging-configuration   --region "$REGION"   --resource-arn "$WAF_ARN"
+ 1323  curl -I "$APEX_URL/"
+ 1324  curl -I "$APP_URL/"
+ 1325  aws logs describe-log-streams   --region "$REGION"   --log-group-name "$WAF_LOG_GROUP"   --order-by LastEventTime   --descending   --max-items 5
+ 1326  aws logs filter-log-events   --region "$REGION"   --log-group-name "$WAF_LOG_GROUP"   --max-items 20
+ 1327  aws route53 list-hosted-zones-by-name   --dns-name arcanum-base.click   --query "HostedZones[].{Id:Id,Name:Name,Private:Config.PrivateZone}"   --output table
+ 1328  for i in {1..50}; do curl -s -o /dev/null "$APEX_URL/"; done
+ 1329  for i in {1..50}; do curl -s -o /dev/null "$APP_URL/"; done
+ 1330  aws s3 ls "s3://$ALB_LOG_BUCKET/$ALB_LOG_PREFIX/AWSLogs/$ACCOUNT_ID/elasticloadbalancing/" --recursive | head
+ 1331  terraform validate
+ 1332  terraform validate
+ 1333  terraform validate
+ 1334  terraform plan
+ 1335  terraform validate
+ 1336  terraform plan
+ 1337  terraform validate
+ 1338  terraform validate
+ 1339  terraform validate
+ 1340  terraform plan
+ 1341  terraform apply
+ 1342  terraform apply
+ 1343  terraform state list | grep aws_route53_record
+ 1344  terraform state mv aws_route53_record.arcanum_apex_alias01 aws_route53_record.arcanum_apex_to_cf01
+ 1345  terraform state mv aws_route53_record.arcanum_app_alias01  aws_route53_record.arcanum_app_to_cf01
+ 1346  terraform plan
+ 1347  terraform apply
+ 1348  terraform state list | grep aws_route53_record
+ 1349  terraform apply
+ 1350  terraform apply
+ 1351  terraform apply
+ 1352  terraform output
+ 1353  terraform output
+ 1354  'c:/Users/Semio/Documents/TheoWAF/class7/AWS/ARMA/armageddon/SEIR_Foundations/LAB1/1A_MY_TF/bonus_a.tf'history > history.txt
+ 1355  history > file.txt

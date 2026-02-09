@@ -1,0 +1,7 @@
+LAB1_TF/
+LAB2_TF/
+**/.terraform/
+*.tfstate
+*.tfstate.*
+.crash.log
+.terraform.lock.hcl
