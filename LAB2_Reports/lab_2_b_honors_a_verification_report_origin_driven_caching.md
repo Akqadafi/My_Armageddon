@@ -35,16 +35,16 @@ CloudFront is configured with a managed **UseOriginCacheControlHeaders** cache p
 
 ## 3. Terraform Evidence
 
-A successful Terraform apply confirms in-place updates (no teardown):
+A successful Terraform apply confirms in-place update:
 
 ```text
 Resources: 0 added, 8 changed, 0 destroyed
 
 New Output:
 arcanum_private_route_table_id = rtb-0361bb4fd188b4c85
-```
+``` 
 
-This confirms that the private routing layer and CloudFront behaviors were updated safely. fileciteturn9file0
+The new output arcanum_private_route_table_id = rtb-0361bb4fd188b4c85 confirms Terraform successfully created/recorded the private routing layer used by your private subnets. This proves the   environment now has an declaried route table controlling how private instances reach AWS services (typically via VPC endpoints and/or NAT), which is critical for “private-by-default” networking and for keeping management traffic (SSM, Secrets Manager, CloudWatch Logs, etc.) off the public internet.
 
 ---
 
@@ -132,17 +132,15 @@ X-Cache: Miss from cloudfront
 
 ---
 
-## 6. Safety Rationale (Required Paragraph)
+## 6. Safety Rationale 
 
-Origin-driven caching is safer for APIs because it keeps cache authority with the application rather than the CDN. By explicitly declaring cacheability using headers such as `Cache-Control: public, s-maxage=30` or `private, no-store`, the application ensures that only deterministic, user-agnostic responses are cached. This prevents accidental exposure of user-specific data, avoids stale business logic, and allows cache behavior to evolve alongside application code without redeploying infrastructure. Caching should still be fully disabled for endpoints that return personalized, security-sensitive, or rapidly changing data—such as authenticated user feeds, financial transactions, or administrative views—where correctness and privacy outweigh latency benefits.
+Origin driven caching is safer for APIs because it keeps the cache authority with the application rather than the CDN. By explicitly stating cacheability with headers like `Cache-Control: public, s-maxage=30` or `private, no-store`, the application ensures that only deterministic, user-neutral responses are cached. This prevents accidental exposure of user-specific data, and allows cache behavior to evolve alongside application code without redeploying the infrastructure. Caching should still be fully disabled for endpoints that return personalized, security-sensitive, or rapidly changing data—such as authenticated user feeds, financial transactions, or administrative views—where correctness and privacy outweigh latency benefits.
 
 ---
 
 ## 7. Conclusion
 
-Honors A is fully implemented and verified.
-
-CloudFront correctly:
+CloudFront goals achieved:
 - Honors origin cache directives
 - Caches shared-safe responses
 - Never caches private endpoints

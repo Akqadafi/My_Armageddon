@@ -36,7 +36,7 @@ To avoid shell quoting errors and preserve auditability, the invalidation batch 
 
 ---
 
-### 2.2 Create Invalidation (CLI)
+### 2.2 Create Invalidation 
 
 ```bash
 aws --region us-east-1 cloudfront create-invalidation \
@@ -91,29 +91,26 @@ Cache-Control: public, max-age=86400, immutable
 
 ---
 
-## 4. Invalidation Policy (Required Paragraph)
+## 4. Invalidation Policy 
 
-CloudFront invalidation is reserved for explicit “break-glass” scenarios such as stale HTML entrypoints after deployment, security incidents, corrupted content, or legal takedowns. For normal deployments, static assets are versioned (for example, `/static/app.<hash>.js`), allowing new content to be deployed without invalidation and ensuring predictable caching behavior. Wildcard invalidations (`/*`) are restricted because they purge the entire cache, increase cost, spike origin load, and undermine cache efficiency; they are permitted only for catastrophic incidents and require explicit justification and documentation. By limiting invalidations to the smallest possible blast radius, caching remains efficient, safe, and operationally controlled.
+CloudFront invalidation is reserved for explicit “break-glass” scenarios such as stale HTML entrypoints after deployment, security incidents, corrupted content, etc. For normal deployments, static assets are versioned  allowing new content to be deployed without invalidation and ensuring predictable caching behavior. Wildcard invalidations (`/*`) should be limited because they purge the entire cache, increase cost, spike origin load, and undermine cache efficiency; they are used only for catastrophic incidents and require explicit justification and documentation. By limiting invalidations to the smallest possible blast radius, caching remains efficient, safe, and operationally controlled.
 
 ---
 
-## 5. Incident Scenario (2–5 Sentences)
+## 5. Incident Scenario 
 
-After deployment, users continued receiving an outdated `index.html` that referenced old static assets. Cache inspection confirmed CloudFront was serving a cached HTML entrypoint while versioned assets were otherwise correct. Because the entrypoint itself was stale, a targeted invalidation of `/static/index.html` was performed instead of a wildcard invalidation. After completion, CloudFront served fresh content, confirmed by an `X-Cache: Miss from cloudfront` response.
+After the deployment, users continued receiving an outdated `index.html` that referenced old static assets. Cache inspection revealed that CloudFront was serving a cached HTML entrypoint while versioned assets were otherwise correct. Because the entrypoint itself was stale, a targeted invalidation of `/static/index.html` was performed instead of a wildcard invalidation. After completion, CloudFront served up new content confirmed by an `X-Cache: Miss from cloudfront` response.
 
 ---
 
 ## 6. Conclusion
 
-Honors B requirements are fully met.
-
-This verification demonstrates:
+Goals Achieved:
 - Correct use of CloudFront invalidation
 - Minimal blast radius
 - Full lifecycle tracking
 - Header-based proof of cache refresh
 
-This is production-grade cache hygiene, not ad-hoc cache clearing.
 
 — **Ahmad K. Qadafi**
 

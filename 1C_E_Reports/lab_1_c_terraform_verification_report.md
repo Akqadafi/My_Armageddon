@@ -29,7 +29,7 @@ EC2 (Application Host) → IAM Role → Secrets Manager → RDS (MySQL)
 
 ---
 
-## Deployment Method (Lab 1C)
+## Deployment Method 
 
 - All infrastructure was provisioned using **Terraform** (`main.tf`)
 - No resources were created manually in the AWS Console

@@ -1,0 +1,227 @@
+============================================================
+LAB 1C — BONUS E
+OUTPUT AND VERIFICATION (TEXT FILE)
+WAF Logging, Security Telemetry, and Incident Evidence
+============================================================
+
+Design Intent
+-------------
+Bonus E proves that Web Application Firewall (WAF) activity is:
+1) Persistently logged
+2) Searchable in near-real time
+3) Rich enough to support incident analysis
+
+This layer answers the security question:
+“Can I prove what the WAF saw, decided, and allowed or blocked?”
+
+============================================================
+SECTION 1 — AUTHORITATIVE IDENTIFIERS
+============================================================
+
+Web ACL
+-------
+Name: arcanum-waf01
+ARN:
+arn:aws:wafv2:us-east-1:233781468925:regional/webacl/arcanum-waf01/acc2b12d-670d-43b2-9d15-b3d2375bc008
+
+Logging Destination
+-------------------
+Type: CloudWatch Logs
+Log Group:
+aws-waf-logs-arcanum-webacl01
+
+Region:
+us-east-1
+
+Associated Resource:
+Application Load Balancer (ALB)
+
+============================================================
+SECTION 2 — WAF LOGGING CONFIGURATION VERIFICATION
+============================================================
+
+------------------------------------------------------------
+2.1 VERIFY WAF LOGGING IS ENABLED (AUTHORITATIVE)  ✅ PASS
+------------------------------------------------------------
+
+Command:
+aws wafv2 get-logging-configuration \
+  --region us-east-1 \
+  --resource-arn arn:aws:wafv2:us-east-1:233781468925:regional/webacl/arcanum-waf01/acc2b12d-670d-43b2-9d15-b3d2375bc008
+
+Output (abridged):
+{
+  "LoggingConfiguration": {
+    "ResourceArn": "arn:aws:wafv2:us-east-1:233781468925:regional/webacl/arcanum-waf01/acc2b12d-670d-43b2-9d15-b3d2375bc008",
+    "LogDestinationConfigs": [
+      "arn:aws:logs:us-east-1:233781468925:log-group:aws-waf-logs-arcanum-webacl01"
+    ],
+    "RedactedFields": [
+      { "SingleHeader": { "Name": "authorization" } },
+      { "SingleHeader": { "Name": "cookie" } }
+    ],
+    "LogType": "WAF_LOGS"
+  }
+}
+
+Interpretation:
+- Logging is explicitly enabled
+- Exactly one destination (AWS requirement)
+- Sensitive headers are redacted by design
+
+Status: PASS
+
+
+============================================================
+SECTION 3 — TRAFFIC GENERATION (CONTROLLED INPUT)
+============================================================
+
+------------------------------------------------------------
+3.1 GENERATE REAL HTTPS TRAFFIC  ✅ PASS
+------------------------------------------------------------
+
+Commands:
+curl -I https://arcanum-base.click/
+curl -I https://app.arcanum-base.click/
+
+Output:
+HTTP/1.1 200 OK
+Server: Werkzeug/3.1.5 Python/3.9.25
+
+Interpretation:
+- Requests traverse: DNS → ALB → WAF → Target
+- Traffic is eligible for WAF inspection and logging
+
+Status: PASS
+
+
+============================================================
+SECTION 4 — LOG STREAM AND EVENT VERIFICATION
+============================================================
+
+------------------------------------------------------------
+4.1 VERIFY LOG STREAM EXISTS  ✅ PASS
+------------------------------------------------------------
+
+Command:
+aws logs describe-log-streams \
+  --region us-east-1 \
+  --log-group-name aws-waf-logs-arcanum-webacl01 \
+  --order-by LastEventTime \
+  --descending \
+  --max-items 5
+
+Output (table-equivalent):
+-------------------------------------------------------------
+Log Stream Name: us-east-1_arcanum-waf01_0
+First Event Time: 1770152031409
+Last Event Time:  1770167181305
+-------------------------------------------------------------
+
+Interpretation:
+- WAF is actively emitting logs
+- Stream is receiving new events
+
+Status: PASS
+
+
+------------------------------------------------------------
+4.2 RETRIEVE REAL WAF EVENTS  ✅ PASS
+------------------------------------------------------------
+
+Command:
+aws logs filter-log-events \
+  --region us-east-1 \
+  --log-group-name aws-waf-logs-arcanum-webacl01 \
+  --max-items 20
+
+Sample Events (abridged, real traffic):
+
+Event 1:
+action=ALLOW
+clientIp=103.38.81.27
+country=HK
+httpMethod=POST
+uri=/
+ruleGroup=AWSManagedRulesCommonRuleSet
+
+Event 2:
+action=ALLOW
+clientIp=156.252.61.58
+country=SC
+httpMethod=POST
+uri=/index.php
+
+Event 3:
+action=ALLOW
+clientIp=103.38.81.27
+country=HK
+httpMethod=POST
+uri=/admin
+
+Interpretation:
+- WAF inspected multiple POST requests
+- Requests hit sensitive paths (/admin, /index.php)
+- Decisions were logged with metadata:
+  - IP
+  - country
+  - URI
+  - HTTP method
+  - rule group
+
+Status: PASS
+
+
+============================================================
+SECTION 5 — FAILURE CONTEXT AND RECOVERY
+============================================================
+
+Observed Behavior:
+------------------
+- Initial absence of logs immediately after deployment
+- Delay between traffic generation and log availability
+
+Resolution:
+-----------
+- Waited for CloudWatch log propagation
+- Re-ran log stream and filter commands
+- Confirmed successful ingestion
+
+Interpretation:
+---------------
+This delay is expected AWS behavior.
+Successful logs after delay confirm correct configuration.
+
+============================================================
+SECTION 6 — SECURITY VALUE ANALYSIS
+============================================================
+
+With Bonus E complete, the system can now answer:
+
+- Which IPs are hitting sensitive paths?
+- Which countries generate suspicious traffic?
+- Are attacks blocked or allowed?
+- Did WAF engage before or after ALB responses?
+- Can events be correlated with ALB access logs?
+
+This transforms WAF from:
+“a checkbox security service”
+into:
+“a forensic data source”
+
+============================================================
+FINAL ASSESSMENT
+============================================================
+
+Bonus E requirements are fully satisfied.
+
+Proven:
+- WAF logging is enabled and authoritative
+- Logs are delivered to CloudWatch Logs
+- Events include actionable security metadata
+- Failures were identified, understood, and resolved
+- System supports real incident response workflows
+
+============================================================
+END OF FILE
+============================================================

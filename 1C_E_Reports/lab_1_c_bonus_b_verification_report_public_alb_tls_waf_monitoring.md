@@ -246,7 +246,7 @@ Bonus B successfully implements a **real-world AWS ingress pattern**:
 - Isolated private compute
 - Actionable monitoring
 
-This module demonstrates readiness to design, deploy, and **verify** secure internet-facing services in AWS.
+
 
 — **Ahmad K. Qadafi**
 

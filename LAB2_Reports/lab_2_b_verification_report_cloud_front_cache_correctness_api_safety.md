@@ -225,9 +225,7 @@ This configuration explicitly prevents:
 
 ## 10. Conclusion
 
-Lab 2B demonstrates **operational competence with CloudFront**, not just usage.
-
-The system now:
+Goals Achieved:
 - Uses caching where safe
 - Avoids caching where dangerous
 - Proves correctness with headers and behavior

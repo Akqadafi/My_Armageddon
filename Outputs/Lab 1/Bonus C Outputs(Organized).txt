@@ -1,0 +1,230 @@
+============================================================
+LAB 1C — BONUS C
+OUTPUT AND VERIFICATION (TEXT FILE)
+Route 53 + DNS Delegation + ACM Validation
+============================================================
+
+Design Intent
+-------------
+Bonus C proves end-to-end DNS ownership and trust:
+
+- Public Route53 hosted zone exists
+- Domain is correctly delegated to AWS nameservers
+- Application subdomain resolves to ALB via ALIAS
+- ACM certificate is DNS-validated and ISSUED
+- HTTPS works using the custom domain
+
+This is the trust foundation of the public ingress layer.
+
+============================================================
+SECTION 1 — AUTHORITATIVE IDENTIFIERS
+============================================================
+
+Domain
+------
+Domain Name: arcanum-base.click
+
+Route53 Hosted Zones
+-------------------
+/hostedzone/Z001663926IWG5SDJP0E3
+/hostedzone/Z05472551N7DN9RT8Z09A
+
+Application FQDN
+----------------
+app.arcanum-base.click
+
+ALB DNS Target
+--------------
+arcanum-alb01-1621613657.us-east-1.elb.amazonaws.com
+
+ACM Certificate
+---------------
+ARN:
+arn:aws:acm:us-east-1:233781468925:certificate/a631041e-5946-4984-b39f-13a3e572f77d
+
+============================================================
+SECTION 2 — VERIFICATION OUTPUT (WITH TABLES)
+============================================================
+
+------------------------------------------------------------
+2.1 VERIFY PUBLIC HOSTED ZONE EXISTS  ✅ PASS
+------------------------------------------------------------
+
+Command:
+aws route53 list-hosted-zones-by-name \
+  --dns-name arcanum-base.click \
+  --query "HostedZones[].{Id:Id,Name:Name,Private:Config.PrivateZone}" \
+  --output table
+
+Output:
+-------------------------------------------------------------------------
+|                         ListHostedZonesByName                         |
++------------------------------------+-----------------------+----------+
+|                 Id                 |         Name          | Private  |
++------------------------------------+-----------------------+----------+
+|  /hostedzone/Z001663926IWG5SDJP0E3 |  arcanum-base.click.  |  False   |
+|  /hostedzone/Z05472551N7DN9RT8Z09A |  arcanum-base.click.  |  False   |
++------------------------------------+-----------------------+----------+
+
+Interpretation:
+- Public hosted zones exist
+- Domain is managed in Route53
+
+Status: PASS
+
+
+------------------------------------------------------------
+2.2 VERIFY DOMAIN DELEGATION (REGISTRAR → ROUTE53)  ✅ PASS
+------------------------------------------------------------
+
+Command:
+aws route53domains get-domain-detail \
+  --domain-name arcanum-base.click \
+  --query "Nameservers[].Name" \
+  --output table
+
+Output:
+-----------------------------
+|      GetDomainDetail      |
++---------------------------+
+|  ns-1443.awsdns-52.org    |
+|  ns-906.awsdns-49.net     |
+|  ns-311.awsdns-38.com     |
+|  ns-1597.awsdns-07.co.uk  |
++---------------------------+
+
+Hosted Zone Delegation Set:
+Command:
+aws route53 get-hosted-zone \
+  --id Z001663926IWG5SDJP0E3 \
+  --query "DelegationSet.NameServers" \
+  --output table
+
+Output:
+-----------------------------
+|       GetHostedZone       |
++---------------------------+
+|  ns-1443.awsdns-52.org    |
+|  ns-906.awsdns-49.net     |
+|  ns-311.awsdns-38.com     |
+|  ns-1597.awsdns-07.co.uk  |
++---------------------------+
+
+Interpretation:
+- Registrar nameservers match Route53 delegation
+- DNS authority correctly established
+
+Status: PASS
+
+
+------------------------------------------------------------
+2.3 VERIFY APP SUBDOMAIN ALIAS RECORD  ✅ PASS
+------------------------------------------------------------
+
+Command:
+aws route53 list-resource-record-sets \
+  --hosted-zone-id Z05472551N7DN9RT8Z09A \
+  --query "ResourceRecordSets[?Name=='app.arcanum-base.click.']" \
+  --output json
+
+Output:
+[
+  {
+    "Name": "app.arcanum-base.click.",
+    "Type": "A",
+    "AliasTarget": {
+      "HostedZoneId": "Z35SXDOTRQ7X7K",
+      "DNSName": "arcanum-alb01-1621613657.us-east-1.elb.amazonaws.com.",
+      "EvaluateTargetHealth": true
+    }
+  }
+]
+
+Interpretation:
+- ALIAS record points to ALB
+- No IP addresses hardcoded
+- Health evaluation enabled
+
+Status: PASS
+
+
+------------------------------------------------------------
+2.4 VERIFY ACM CERTIFICATE STATUS  ✅ PASS
+------------------------------------------------------------
+
+Command:
+aws acm describe-certificate \
+  --region us-east-1 \
+  --certificate-arn arn:aws:acm:us-east-1:233781468925:certificate/a631041e-5946-4984-b39f-13a3e572f77d \
+  --query "Certificate.Status" \
+  --output text
+
+Output:
+ISSUED
+
+Interpretation:
+- Certificate successfully validated
+- DNS validation completed
+
+Status: PASS
+
+
+------------------------------------------------------------
+2.5 VERIFY HTTPS USING CUSTOM DOMAIN  ✅ PASS
+------------------------------------------------------------
+
+Command:
+curl -I https://app.arcanum-base.click
+
+Output:
+HTTP/1.1 200 OK
+Date: Sat, 31 Jan 2026 20:59:50 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 121
+Connection: keep-alive
+Server: Werkzeug/3.1.5 Python/3.9.25
+
+Interpretation:
+- HTTPS terminates successfully
+- Certificate trusted by client
+- Traffic reaches application
+
+Status: PASS
+
+
+------------------------------------------------------------
+2.6 MULTI-ZONE RECORD CONSISTENCY CHECK  ✅ PASS
+------------------------------------------------------------
+
+Command:
+for Z in Z001663926IWG5SDJP0E3 Z05472551N7DN9RT8Z09A; do
+  aws route53 list-resource-record-sets \
+    --hosted-zone-id "$Z" \
+    --query "ResourceRecordSets[?Name=='app.arcanum-base.click.']"
+done
+
+Result:
+- ALIAS record exists consistently
+- No conflicting records detected
+
+Status: PASS
+
+============================================================
+SECTION 3 — FINAL ASSESSMENT
+============================================================
+
+Bonus C requirements are fully satisfied.
+
+Proven:
+- Domain ownership and delegation
+- Route53 public hosted zone
+- Correct ALIAS routing to ALB
+- ACM certificate issued via DNS validation
+- HTTPS functional on custom domain
+
+This establishes the DNS and trust layer required
+for a production public application.
+
+============================================================
+END OF FILE
+============================================================

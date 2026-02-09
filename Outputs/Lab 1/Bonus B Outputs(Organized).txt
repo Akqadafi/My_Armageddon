@@ -1,0 +1,298 @@
+============================================================
+LAB 1C — BONUS B
+OUTPUT AND VERIFICATION (TEXT FILE)
+Public ALB + HTTPS + WAF + Monitoring
+============================================================
+
+Design Intent
+-------------
+Bonus B introduces a hardened public ingress layer while keeping
+compute private. The architecture proves:
+
+- Internet-facing ALB
+- Private EC2 targets only
+- HTTP → HTTPS redirect
+- TLS via ACM
+- WAF attached to ALB
+- Route53 alias to ALB
+- CloudWatch alarms and dashboard
+
+This is a standard enterprise ingress pattern.
+
+============================================================
+SECTION 1 — AUTHORITATIVE IDENTIFIERS
+============================================================
+
+Application Load Balancer
+------------------------
+Name: arcanum-alb01
+ARN:
+arn:aws:elasticloadbalancing:us-east-1:233781468925:loadbalancer/app/arcanum-alb01/828dc9c10c4591fd
+
+DNS Name:
+arcanum-alb01-1621613657.us-east-1.elb.amazonaws.com
+
+Target Group
+------------
+Name: arcanum-tg01
+ARN:
+arn:aws:elasticloadbalancing:us-east-1:233781468925:targetgroup/arcanum-tg01/29be6b9602567d9c
+
+WAF
+---
+Name: arcanum-waf01
+ARN:
+arn:aws:wafv2:us-east-1:233781468925:regional/webacl/arcanum-waf01/d9961e3c-b851-454c-ae6f-bfa18384797f
+
+Certificate (ACM)
+-----------------
+ARN:
+arn:aws:acm:us-east-1:233781468925:certificate/a631041e-5946-4984-b39f-13a3e572f77d
+
+Route53
+-------
+Hosted Zones (public):
+- Z001663926IWG5SDJP0E3
+- Z05472551N7DN9RT8Z09A
+
+Application FQDN:
+app.arcanum-base.click
+
+============================================================
+SECTION 2 — VERIFICATION OUTPUT (WITH TABLES)
+============================================================
+
+------------------------------------------------------------
+2.1 VERIFY ALB EXISTS AND IS ACTIVE  ✅ PASS
+------------------------------------------------------------
+
+Command:
+aws elbv2 describe-load-balancers \
+  --names arcanum-alb01 \
+  --query "LoadBalancers[0].{Name:LoadBalancerName,State:State.Code,DNS:DNSName,Arn:LoadBalancerArn}" \
+  --output table
+
+Output:
+------------------------------------------------------------------------------------------------------------------
+|                                          DescribeLoadBalancers                                                  |
++-------+--------------------------------------------------------------------------------------------------------+
+| Arn   | arn:aws:elasticloadbalancing:us-east-1:233781468925:loadbalancer/app/arcanum-alb01/828dc9c10c4591fd   |
+| DNS   | arcanum-alb01-1621613657.us-east-1.elb.amazonaws.com                                                  |
+| Name  | arcanum-alb01                                                                                         |
+| State | active                                                                                                |
++-------+--------------------------------------------------------------------------------------------------------+
+
+Status: PASS
+
+
+------------------------------------------------------------
+2.2 VERIFY LISTENERS (HTTP + HTTPS)  ✅ PASS
+------------------------------------------------------------
+
+Command:
+aws elbv2 describe-listeners \
+  --load-balancer-arn "$ALB_ARN" \
+  --query "Listeners[].{Port:Port,Protocol:Protocol,DefaultAction:DefaultActions[0].Type}" \
+  --output table
+
+Output:
+----------------------------------------
+|           DescribeListeners           |
++-----------------+-------+------------+
+| DefaultAction   | Port  | Protocol   |
++-----------------+-------+------------+
+| forward         | 443   | HTTPS      |
+| redirect        | 80    | HTTP       |
++-----------------+-------+------------+
+
+Interpretation:
+- HTTP (80) redirects to HTTPS
+- HTTPS (443) forwards to target group
+
+Status: PASS
+
+
+------------------------------------------------------------
+2.3 VERIFY TARGET GROUP ASSOCIATION  ✅ PASS
+------------------------------------------------------------
+
+Command:
+aws elbv2 describe-target-groups \
+  --load-balancer-arn "$ALB_ARN" \
+  --query "TargetGroups[].{Name:TargetGroupName,ARN:TargetGroupArn}" \
+  --output table
+
+Output:
+-----------------------------------------------------------------------------------------------------------
+|                                   DescribeTargetGroups                                                    |
++------+--------------------------------------------------------------------------------------------------+
+| ARN  | arn:aws:elasticloadbalancing:us-east-1:233781468925:targetgroup/arcanum-tg01/29be6b9602567d9c     |
+| Name | arcanum-tg01                                                                                    |
++------+--------------------------------------------------------------------------------------------------+
+
+Status: PASS
+
+
+------------------------------------------------------------
+2.4 VERIFY TARGET HEALTH (FAILURE → RECOVERY)  ✅ PASS
+------------------------------------------------------------
+
+Initial check (failure observed earlier in lab):
+State: unhealthy
+Reason: Target.FailedHealthChecks
+
+Follow-up check:
+Command:
+aws elbv2 describe-target-health \
+  --target-group-arn "$TG_ARN" \
+  --query "TargetHealthDescriptions[].{Target:Target.Id,State:TargetHealth.State,Reason:TargetHealth.Reason}" \
+  --output table
+
+Output:
+----------------------------------------------
+|           DescribeTargetHealth             |
++--------+-----------+-----------------------+
+| Reason | State     | Target                |
++--------+-----------+-----------------------+
+| None   | healthy   | i-0b92ef6cc81a49c4d   |
++--------+-----------+-----------------------+
+
+Interpretation:
+- Initial health check failures resolved
+- Target now healthy and serving traffic
+
+Status: PASS (failure acknowledged and corrected)
+
+
+------------------------------------------------------------
+2.5 VERIFY WAF ATTACHED TO ALB  ✅ PASS
+------------------------------------------------------------
+
+Command:
+aws wafv2 get-web-acl-for-resource \
+  --resource-arn "$ALB_ARN" \
+  --query "{Name:WebACL.Name,Arn:WebACL.ARN,Id:WebACL.Id}" \
+  --output table
+
+Output:
+--------------------------------------------------------------------------------------------------------------------------
+|                                           GetWebACLForResource                                                        |
++-----------+------------------------------------------------------------------------------------------------------------+
+| Id        | d9961e3c-b851-454c-ae6f-bfa18384797f                                                                       |
+| Name      | arcanum-waf01                                                                                              |
+| WebACLArn | arn:aws:wafv2:us-east-1:233781468925:regional/webacl/arcanum-waf01/d9961e3c-b851-454c-ae6f-bfa18384797f   |
++-----------+------------------------------------------------------------------------------------------------------------+
+
+Status: PASS
+
+
+------------------------------------------------------------
+2.6 VERIFY CLOUDWATCH ALARM EXISTS  ✅ PASS
+------------------------------------------------------------
+
+Command:
+aws cloudwatch describe-alarms \
+  --alarm-name-prefix "arcanum-alb-5xx" \
+  --query "MetricAlarms[].{Name:AlarmName,Metric:MetricName,State:StateValue}" \
+  --output table
+
+Output:
+------------------------------------------
+|           DescribeAlarms               |
++------------+---------------------------+
+| Metric     | HTTPCode_ELB_5XX_Count    |
+| Name       | arcanum-alb-5xx-alarm01   |
+| State      | INSUFFICIENT_DATA         |
++------------+---------------------------+
+
+Note:
+- INSUFFICIENT_DATA is expected when no traffic spike has occurred.
+
+Status: PASS
+
+
+------------------------------------------------------------
+2.7 VERIFY CLOUDWATCH DASHBOARD EXISTS  ✅ PASS
+------------------------------------------------------------
+
+Command:
+aws cloudwatch list-dashboards \
+  --dashboard-name-prefix "arcanum" \
+  --query "DashboardEntries[].{Name:DashboardName,LastModified:LastModified}" \
+  --output table
+
+Output:
+------------------------------------------------------
+|                 ListDashboards                     |
++----------------------------+-----------------------+
+| LastModified               | Name                  |
++----------------------------+-----------------------+
+| 2026-01-31T01:08:53+00:00  | arcanum-dashboard01   |
++----------------------------+-----------------------+
+
+Status: PASS
+
+
+------------------------------------------------------------
+2.8 VERIFY ROUTE53 ALIAS RECORD  ✅ PASS
+------------------------------------------------------------
+
+Command:
+aws route53 list-resource-record-sets \
+  --hosted-zone-id Z05472551N7DN9RT8Z09A \
+  --query "ResourceRecordSets[?Name=='app.arcanum-base.click.']" \
+  --output json
+
+Output:
+[
+  {
+    "Name": "app.arcanum-base.click.",
+    "Type": "A",
+    "AliasTarget": {
+      "HostedZoneId": "Z35SXDOTRQ7X7K",
+      "DNSName": "arcanum-alb01-1621613657.us-east-1.elb.amazonaws.com.",
+      "EvaluateTargetHealth": true
+    }
+  }
+]
+
+Status: PASS
+
+
+------------------------------------------------------------
+2.9 VERIFY HTTPS END-TO-END  ✅ PASS
+------------------------------------------------------------
+
+Command:
+curl -I https://app.arcanum-base.click
+
+Output:
+HTTP/1.1 200 OK
+Server: Werkzeug/3.1.5 Python/3.9.25
+
+Interpretation:
+- TLS certificate valid
+- Traffic reaches application successfully
+
+Status: PASS
+
+============================================================
+SECTION 3 — FINAL ASSESSMENT
+============================================================
+
+Bonus B requirements are fully satisfied.
+
+Proven:
+- Public ALB exists and is active
+- HTTP redirects to HTTPS
+- ACM certificate issued and in use
+- WAF attached to ALB
+- Private EC2 targets are healthy
+- Route53 alias correctly resolves
+- Monitoring (alarm + dashboard) is present
+
+This stack reflects a real-world, production-grade ingress layer.
+
+============================================================
+END OF FILE
+============================================================

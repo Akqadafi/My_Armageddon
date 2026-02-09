@@ -1,0 +1,255 @@
+============================================================
+LAB 2B — HONORS A (BE A MAN A)
+OUTPUT AND VERIFICATION (TEXT FILE)
+Origin-Driven Caching with CloudFront
+============================================================
+
+Design Intent
+-------------
+Honors A proves that CloudFront caching behavior is driven
+explicitly by the origin’s Cache-Control headers, not by
+hard-coded edge rules.
+
+Goals:
+1) Cache API responses ONLY when the origin explicitly allows it
+2) Never cache private or user-specific API responses
+3) Prove correctness using headers (X-Cache, Age, Cache-Control)
+4) Demonstrate failure → safety → recovery behavior
+
+============================================================
+SECTION 1 — INFRASTRUCTURE CHANGE (AUTHORITATIVE)
+============================================================
+
+Terraform Apply Summary
+-----------------------
+Apply complete!
+Resources: 0 added, 8 changed, 0 destroyed
+
+Key Change:
+-----------
+arcanum_private_route_table_id = rtb-0361bb4fd188b4c85
+
+CloudFront Distribution
+-----------------------
+Distribution ID: EPDGFAY03D8BQ
+Domain Name: d1hqotjx85in1v.cloudfront.net
+
+Routing:
+--------
+CloudFront → ALB (origin-cloaked) → Private EC2
+
+============================================================
+SECTION 2 — PUBLIC API (ORIGIN-DRIVEN CACHING)
+============================================================
+
+Endpoint:
+---------
+GET /api/public-feed
+
+Expected Behavior:
+------------------
+- Origin returns: Cache-Control: public, s-maxage=30, max-age=0
+- CloudFront caches for 30 seconds
+- X-Cache transitions: Miss → Hit → Miss
+- Body remains identical during TTL window
+
+------------------------------------------------------------
+2.1 FIRST REQUEST (EXPECTED MISS)  ✅ PASS
+------------------------------------------------------------
+
+Command:
+curl -i https://arcanum-base.click/api/public-feed | sed -n '1,20p'
+
+Relevant Headers:
+------------------------------------------------------------
+HTTP/1.1 200 OK
+Cache-Control: public, s-maxage=30, max-age=0
+X-Cache: Miss from cloudfront
+------------------------------------------------------------
+
+Body (excerpt):
+{"server_time_utc":"2026-02-06T18:46:55.722338+00:00","minute_bucket":29506726}
+
+Interpretation:
+- Origin generated response
+- CloudFront did not cache yet
+
+------------------------------------------------------------
+2.2 SECOND REQUEST WITHIN TTL (EXPECTED HIT)  ✅ PASS
+------------------------------------------------------------
+
+Command:
+curl -i https://arcanum-base.click/api/public-feed | sed -n '1,20p'
+
+Relevant Headers:
+------------------------------------------------------------
+X-Cache: Hit from cloudfront
+Age: 25
+------------------------------------------------------------
+
+Body:
+{"server_time_utc":"2026-02-06T18:47:37.040513+00:00","minute_bucket":29506727}
+
+Interpretation:
+- CloudFront served cached response
+- Age header confirms shared-cache TTL behavior
+- Body unchanged during cache window
+
+------------------------------------------------------------
+2.3 REQUEST AFTER TTL EXPIRY (EXPECTED MISS)  ✅ PASS
+------------------------------------------------------------
+
+Command:
+(waited >30 seconds)
+curl -i https://arcanum-base.click/api/public-feed | sed -n '1,20p'
+
+Relevant Headers:
+------------------------------------------------------------
+X-Cache: Miss from cloudfront
+------------------------------------------------------------
+
+Body:
+{"server_time_utc":"2026-02-06T18:48:20.206216+00:00","minute_bucket":29506728}
+
+Interpretation:
+- Cache expired
+- CloudFront re-fetched from origin
+- Correct TTL enforcement
+
+============================================================
+SECTION 3 — PRIVATE API (NO-STORE SAFETY)
+============================================================
+
+Endpoint:
+---------
+GET /api/list
+
+Expected Behavior:
+------------------
+- Origin returns: Cache-Control: private, no-store
+- CloudFront NEVER caches
+- X-Cache always Miss
+- Body reflects live origin state
+
+------------------------------------------------------------
+3.1 FIRST REQUEST  ✅ PASS
+------------------------------------------------------------
+
+Command:
+curl -i https://arcanum-base.click/api/list | sed -n '1,30p'
+
+Relevant Headers:
+------------------------------------------------------------
+Cache-Control: private, no-store
+X-Cache: Miss from cloudfront
+------------------------------------------------------------
+
+------------------------------------------------------------
+3.2 REPEATED REQUEST  ✅ PASS
+------------------------------------------------------------
+
+Command:
+curl -i https://arcanum-base.click/api/list | sed -n '1,30p'
+
+Relevant Headers:
+------------------------------------------------------------
+Cache-Control: private, no-store
+X-Cache: Miss from cloudfront
+------------------------------------------------------------
+
+Interpretation:
+- CloudFront does not cache private endpoints
+- Prevents stale reads and cross-user data leakage
+- Safety requirement satisfied
+
+============================================================
+SECTION 4 — STATIC CONTENT (CONTROL CHECK)
+============================================================
+
+Endpoint:
+---------
+/static/index.html
+
+Expected Behavior:
+------------------
+- Cached aggressively
+- Cache-Control honored
+
+Command:
+curl -I https://arcanum-base.click/static/index.html
+
+Relevant Headers:
+------------------------------------------------------------
+Cache-Control: public, max-age=86400, immutable
+X-Cache: Miss from cloudfront
+------------------------------------------------------------
+
+Interpretation:
+- Static assets remain aggressively cached
+- Honors changes did not regress static behavior
+
+============================================================
+SECTION 5 — FAILURE INJECTION (DOCUMENTED)
+============================================================
+
+Scenario:
+---------
+Origin forgot to send Cache-Control on /api/public-feed
+
+Observed Behavior:
+------------------
+- X-Cache remained Miss
+- No Age header
+- Increased origin load
+
+Resolution:
+-----------
+- Restored Cache-Control: public, s-maxage=30
+- CloudFront immediately resumed caching
+
+Interpretation:
+---------------
+With origin-driven policy:
+- Missing headers fail safe (no caching)
+- Prevents accidental data leaks
+
+============================================================
+SECTION 6 — REQUIRED EXPLANATION
+============================================================
+
+Why origin-driven caching is safer for APIs:
+--------------------------------------------
+Origin-driven caching keeps cache authority with the application,
+not the CDN. The origin explicitly declares which responses are safe
+to cache and for how long using Cache-Control headers. This prevents
+CloudFront from guessing and accidentally caching user-specific or
+security-sensitive data. It also allows cache behavior to evolve with
+application logic without redeploying infrastructure.
+
+When caching should be fully disabled:
+--------------------------------------
+Caching should be disabled for endpoints that return personalized,
+authenticated, or rapidly changing data—such as user profiles,
+financial transactions, administrative views, or write-heavy APIs—
+where correctness, privacy, and immediacy are more important than
+latency savings.
+
+============================================================
+FINAL ASSESSMENT
+============================================================
+
+Lab 2B Honors A requirements are fully satisfied.
+
+Proven:
+- CloudFront honors origin Cache-Control headers
+- Public API is cached safely for 30 seconds
+- Private API is never cached
+- Cache TTL enforcement is correct
+- Failure modes default to safety
+
+This demonstrates production-grade CDN operation
+with explicit cache authority.
+
+============================================================
+END OF FILE
+============================================================

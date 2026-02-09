@@ -198,7 +198,7 @@ At this point, the deployment supports:
 - Traffic forensics (ALB logs)
 - **Security decision auditing (WAF logs)**
 
-This is the standard expected of real production AWS environments.
+
 
 — **Ahmad K. Qadafi**
 

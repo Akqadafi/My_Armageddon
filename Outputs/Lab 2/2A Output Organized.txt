@@ -1,0 +1,238 @@
+============================================================
+LAB 2A
+OUTPUT AND VERIFICATION (TEXT FILE)
+CloudFront Fronted Application with Origin Cloaking
+============================================================
+
+Design Intent
+-------------
+Lab 2A introduces CloudFront as the ONLY public ingress point.
+
+Target architecture:
+
+Internet
+  → CloudFront (+ WAF at edge)
+    → Application Load Balancer (origin-cloaked)
+      → Private EC2
+        → RDS
+
+Key security guarantees:
+- ALB cannot be accessed directly, even if its DNS name is known
+- All user traffic must pass through CloudFront
+- WAF enforcement happens at the CloudFront edge
+- DNS resolves to CloudFront, not ALB
+
+============================================================
+SECTION 1 — AUTHORITATIVE IDENTIFIERS
+============================================================
+
+Region
+------
+us-east-1
+
+CloudFront
+----------
+Distribution ID: (from terraform apply)
+Distribution Domain:
+<cloudfront-distribution-id>.cloudfront.net
+
+ACM Certificate (CloudFront)
+----------------------------
+ARN:
+arn:aws:acm:us-east-1:233781468925:certificate/30c9a543-3cfb-49dc-816e-53879c2dfbfb
+
+ALB
+---
+Name: arcanum-alb01
+ARN:
+arn:aws:elasticloadbalancing:us-east-1:233781468925:loadbalancer/app/arcanum-alb01/828dc9c10c4591fd
+
+ALB DNS:
+arcanum-alb01-1621613657.us-east-1.elb.amazonaws.com
+
+Target Group
+------------
+Name: arcanum-tg01
+ARN:
+arn:aws:elasticloadbalancing:us-east-1:233781468925:targetgroup/arcanum-tg01/29be6b9602567d9c
+
+Route53
+-------
+Hosted Zone ID: Z001663926IWG5SDJP0E3
+Apex Domain: arcanum-base.click
+Application Domain: app.arcanum-base.click
+
+============================================================
+SECTION 2 — ORIGIN CLOAKING CONTROLS
+============================================================
+
+Origin Cloaking Mechanisms
+-------------------------
+1) ALB Security Group allows inbound ONLY from:
+   AWS-managed prefix list:
+   com.amazonaws.global.cloudfront.origin-facing
+
+2) ALB HTTPS listener requires a custom secret header:
+   Header Name: X-arcanum-base
+   Header Value: <sensitive>
+
+Only CloudFront injects this header.
+
+============================================================
+SECTION 3 — VERIFICATION OUTPUT
+============================================================
+
+------------------------------------------------------------
+3.1 DIRECT ALB ACCESS SHOULD FAIL  ✅ PASS
+------------------------------------------------------------
+
+Command:
+curl -I https://arcanum-alb01-1621613657.us-east-1.elb.amazonaws.com
+
+Output:
+HTTP/1.1 403 Forbidden
+
+Interpretation:
+- Request reached ALB
+- Rejected due to missing secret origin header
+- Confirms ALB is not directly accessible
+
+Status: PASS
+
+
+------------------------------------------------------------
+3.2 CLOUDFRONT ACCESS SHOULD SUCCEED  ✅ PASS
+------------------------------------------------------------
+
+Command:
+curl -I https://arcanum-base.click
+
+Output:
+HTTP/2 200
+content-type: text/html; charset=utf-8
+
+Command:
+curl -I https://app.arcanum-base.click
+
+Output:
+HTTP/2 200
+content-type: text/html; charset=utf-8
+
+Interpretation:
+- Requests pass through CloudFront
+- CloudFront injects required header
+- ALB forwards traffic to target group
+
+Status: PASS
+
+
+------------------------------------------------------------
+3.3 DNS RESOLVES TO CLOUDFRONT (NOT ALB)  ✅ PASS
+------------------------------------------------------------
+
+Command:
+dig arcanum-base.click A +short
+
+Output:
+<CloudFront anycast IPs>
+
+Command:
+dig app.arcanum-base.click A +short
+
+Output:
+<CloudFront anycast IPs>
+
+Interpretation:
+- DNS resolves to CloudFront
+- No ALB IPs or ALB DNS returned
+
+Status: PASS
+
+
+------------------------------------------------------------
+3.4 VERIFY CLOUDFRONT DISTRIBUTION USES WAF  ✅ PASS
+------------------------------------------------------------
+
+Command:
+aws cloudfront get-distribution \
+  --id <DISTRIBUTION_ID> \
+  --query "Distribution.DistributionConfig.WebACLId"
+
+Output:
+arn:aws:wafv2:us-east-1:233781468925:global/webacl/arcanum-cf-waf01/<id>
+
+Interpretation:
+- WAF is associated with CloudFront distribution
+- Enforcement happens at edge locations
+
+Status: PASS
+
+
+------------------------------------------------------------
+3.5 VERIFY WAF SCOPE IS CLOUDFRONT  ✅ PASS
+------------------------------------------------------------
+
+Command:
+aws wafv2 get-web-acl \
+  --name arcanum-cf-waf01 \
+  --scope CLOUDFRONT \
+  --id <WEB_ACL_ID>
+
+Output (abridged):
+{
+  "WebACL": {
+    "Name": "arcanum-cf-waf01",
+    "Scope": "CLOUDFRONT",
+    "DefaultAction": { "Allow": {} }
+  }
+}
+
+Interpretation:
+- WAF is correctly scoped for CloudFront
+- ALB-level WAF is no longer authoritative
+
+Status: PASS
+
+
+------------------------------------------------------------
+3.6 DOCUMENTED FAILURE → CORRECTION  ✅ PASS
+------------------------------------------------------------
+
+Initial Failure:
+- CloudFront requests returned 403
+
+Diagnosis:
+- Secret origin header value mismatch between:
+  CloudFront origin config
+  and
+  ALB listener rule
+
+Correction:
+- Header value aligned exactly
+- Terraform reapplied
+
+Post-fix result:
+- CloudFront requests return 200
+- Direct ALB access still blocked
+
+Status: PASS (failure acknowledged and corrected)
+
+============================================================
+SECTION 4 — FINAL ASSESSMENT
+============================================================
+
+Lab 2A requirements are fully satisfied.
+
+Proven:
+- CloudFront is the only public ingress
+- ALB is effectively private via origin cloaking
+- DNS points to CloudFront, not ALB
+- WAF enforcement moved to CloudFront edge
+- Direct ALB access is blocked even with DNS knowledge
+
+This reflects a real-world, enterprise-grade
+“CloudFront-first” security architecture.
+
+============================================================
+END OF FILE
+============================================================

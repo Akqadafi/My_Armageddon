@@ -1,0 +1,265 @@
+============================================================
+LAB 1C — OUTPUT AND VERIFICATION
+EC2 → RDS Secure Application Pattern
+============================================================
+
+Student Intent
+--------------
+This lab extends the EC2 → RDS application pattern by adding:
+- Centralized logging
+- Monitoring and alerting
+- Explicit IAM role usage
+- Parameterized configuration
+- Verifiable infrastructure outputs
+
+The goal is not application complexity, but infrastructure correctness,
+security boundaries, and operational observability.
+
+============================================================
+SECTION 1 — Terraform Plan Summary (Relevant Resources Only)
+============================================================
+
+The following resources were planned and applied to support Lab 1C
+verification requirements.
+
+CloudWatch
+-----------
+- Log Group:
+  Name: /aws/ec2/arcanum-rds-app
+  Retention: 7 days
+
+- Metric Alarm:
+  Name: arcanum-db-connection-failure
+  Metric: DBConnectionErrors
+  Threshold: >= 3
+  Period: 300 seconds
+
+RDS
+---
+- Identifier: arcanum-rds01
+- Engine: MySQL
+- Instance Class: db.t3.micro
+- Multi-AZ: true
+- Publicly Accessible: false
+- Subnet Group: arcanum-rds-subnet-group01
+- Security Group: arcanum-rds-sg01
+
+EC2
+---
+- Instance Name: arcanum-ec201
+- Instance Type: t3.micro
+- IAM Instance Profile: arcanum-instance-profile01
+- Application runs as systemd service (rdsapp.service)
+
+IAM
+---
+- Role: arcanum-ec2-role01
+- Permissions:
+  - SecretsManager:GetSecretValue (scoped to lab/rds/mysql)
+  - AmazonSSMManagedInstanceCore
+  - CloudWatchAgentServerPolicy
+
+Networking
+----------
+- VPC: arcanum-vpc01 (10.0.0.0/16)
+- Public Subnets: 2
+- Private Subnets: 2
+- NAT Gateway for private subnet egress
+- RDS ingress restricted to EC2 security group (TCP 3306)
+
+============================================================
+SECTION 2 — Terraform Outputs (Authoritative)
+============================================================
+
+These outputs are the authoritative identifiers used for verification.
+
+EC2 Instance
+------------
+arcanum_ec2_instance_id = "i-07f00c463709a0cbd"
+
+CloudWatch
+----------
+arcanum_log_group_name = "/aws/ec2/arcanum-rds-app"
+
+VPC
+---
+arcanum_vpc_id = "vpc-0e83e5b73439fbd52"
+
+Subnets
+-------
+Private:
+  subnet-0886960f3e43126a6
+  subnet-074e3630b262f0b44
+
+Public:
+  subnet-0dbce14f8970e4550
+  subnet-030945b61f846f815
+
+RDS
+---
+Endpoint:
+  arcanum-rds01.coj82qo2k48t.us-east-1.rds.amazonaws.com
+
+SNS
+---
+arcanum_sns_topic_arn =
+  arn:aws:sns:us-east-1:233781468925:arcanum-db-incidents
+
+Secrets Manager
+---------------
+Secret Name: lab/rds/mysql
+Secret ARN:
+  arn:aws:secretsmanager:us-east-1:233781468925:secret:lab/rds/mysql-WUK9qA
+
+============================================================
+SECTION 3 — Verification Evidence
+============================================================
+
+3.1 Verify EC2 Instance Exists and Is Running
+---------------------------------------------
+Command:
+aws ec2 describe-instances --instance-ids i-07f00c463709a0cbd
+
+Result:
+- Instance exists
+- State: running
+- IAM instance profile attached
+
+Status: PASS
+
+------------------------------------------------------------
+
+3.2 Verify IAM Role Attached to EC2
+----------------------------------
+Command:
+aws ec2 describe-instances \
+  --instance-ids i-07f00c463709a0cbd \
+  --query "Reservations[].Instances[].IamInstanceProfile.Arn"
+
+Result:
+- ARN returned (non-null)
+- Role arcanum-ec2-role01 attached
+
+Status: PASS
+
+------------------------------------------------------------
+
+3.3 Verify RDS Is Private
+------------------------
+Command:
+aws rds describe-db-instances \
+  --db-instance-identifier arcanum-rds01 \
+  --query "DBInstances[].PubliclyAccessible"
+
+Result:
+false
+
+Status: PASS
+
+------------------------------------------------------------
+
+3.4 Verify RDS Security Group Restriction
+----------------------------------------
+Initial Attempt:
+- Connection attempt from non-EC2 source failed (timeout)
+
+Diagnosis:
+- RDS ingress correctly restricted
+- Only EC2 security group allowed on TCP 3306
+
+Correction:
+- Verified access from EC2 instance succeeded
+
+Status: PASS (expected failure observed, then validated)
+
+------------------------------------------------------------
+
+3.5 Verify Secrets Manager Access From EC2
+------------------------------------------
+Command (from EC2):
+aws secretsmanager get-secret-value \
+  --secret-id lab/rds/mysql
+
+Result:
+- Secret retrieved successfully
+- JSON contained username, password, host, port
+
+Status: PASS
+
+------------------------------------------------------------
+
+3.6 Verify Database Connectivity
+--------------------------------
+Command (from EC2):
+mysql -h arcanum-rds01.coj82qo2k48t.us-east-1.rds.amazonaws.com -u admin -p
+
+Result:
+- Successful MySQL login
+- No timeout or access denied errors
+
+Status: PASS
+
+------------------------------------------------------------
+
+3.7 Verify Application Data Path
+--------------------------------
+Endpoints Tested:
+- /init
+- /add?note=cloud_labs_are_real
+- /list
+
+Result:
+- Database initialized
+- Data inserted successfully
+- Data persisted across requests
+
+Status: PASS
+
+------------------------------------------------------------
+
+3.8 Verify CloudWatch Logging
+-----------------------------
+Command:
+aws logs describe-log-groups \
+  --log-group-name-prefix "/aws/ec2/arcanum-rds-app"
+
+Result:
+- Log group exists
+- Application logs present
+
+Status: PASS
+
+------------------------------------------------------------
+
+3.9 Verify Monitoring and Alerting
+----------------------------------
+Command:
+aws cloudwatch describe-alarms \
+  --alarm-names arcanum-db-connection-failure
+
+Result:
+- Alarm exists
+- Correct metric and threshold configured
+
+Status: PASS
+
+============================================================
+SECTION 4 — Final Assessment
+============================================================
+
+Lab 1C requirements are satisfied.
+
+This implementation demonstrates:
+- Secure EC2 → RDS connectivity
+- IAM role-based credential access
+- No hardcoded secrets
+- Private database deployment
+- Centralized logging and monitoring
+- Failure awareness and controlled recovery
+
+This reflects a real-world AWS application pattern suitable for
+production environments.
+
+============================================================
+END OF FILE
+============================================================

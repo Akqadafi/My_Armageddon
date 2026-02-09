@@ -192,13 +192,12 @@ dig app.arcanum-base.click A +short
 
 Lab 2A successfully converts the Arcanum stack into a **CDN‑fronted, origin‑cloaked architecture**.
 
-At this stage:
+Goals Achieved:
 - The ALB is invisible to the public internet
 - All traffic is inspected at the edge
 - DNS reveals nothing about the origin
 - Security controls are layered, not singular
 
-This is the pattern used by serious production systems, and it is fully verified.
 
 — **Ahmad K. Qadafi**
 

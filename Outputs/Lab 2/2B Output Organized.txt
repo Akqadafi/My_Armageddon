@@ -1,0 +1,236 @@
+============================================================
+LAB 2B
+OUTPUT AND VERIFICATION (TEXT FILE)
+CloudFront Cache Correctness (Static vs API)
+============================================================
+
+Design Intent
+-------------
+Lab 2B validates that CloudFront caching is:
+1) Aggressive where safe (static assets)
+2) Disabled or conservative where unsafe (API)
+3) Proven using HTTP headers and repeated requests
+
+This lab explicitly demonstrates:
+- Cache key correctness
+- Cache-Control semantics
+- Prevention of stale or cross-user API responses
+
+============================================================
+SECTION 1 — AUTHORITATIVE IDENTIFIERS
+============================================================
+
+CloudFront
+----------
+Distribution ID: EPDGFAY03D8BQ
+Domain Name: d1hqotjx85in1v.cloudfront.net
+
+Apex URL:
+https://arcanum-base.click
+
+Application URL:
+https://app.arcanum-base.click
+
+Origin:
+Application Load Balancer (HTTPS, origin-cloaked)
+
+============================================================
+SECTION 2 — STATIC CONTENT (AGGRESSIVE CACHING)
+============================================================
+
+Test Asset
+----------
+Path:
+/static/example.txt
+
+Expected Behavior:
+- Cached aggressively
+- Cache-Control respected
+- Increasing Age header on repeated requests
+- X-Cache transitions from Miss → Hit
+
+------------------------------------------------------------
+2.1 FIRST REQUEST (CACHE MISS)  ✅ PASS
+------------------------------------------------------------
+
+Command:
+curl -I https://d1hqotjx85in1v.cloudfront.net/static/example.txt
+
+Relevant Headers:
+------------------------------------------------------------
+Cache-Control: public, max-age=86400, immutable
+X-Cache: Miss from cloudfront
+Via: CloudFront
+------------------------------------------------------------
+
+Interpretation:
+- Object fetched from origin
+- Cached according to policy
+
+------------------------------------------------------------
+2.2 SUBSEQUENT REQUESTS (CACHE HIT)  ✅ PASS
+------------------------------------------------------------
+
+Command:
+curl -I https://d1hqotjx85in1v.cloudfront.net/static/example.txt
+
+Relevant Headers:
+------------------------------------------------------------
+X-Cache: Hit from cloudfront
+Age: 1 → 10 → 11
+------------------------------------------------------------
+
+Interpretation:
+- Cache hit confirmed
+- Age increases monotonically
+- Object served from edge cache
+
+------------------------------------------------------------
+2.3 QUERY STRING BEHAVIOR (CACHE KEY)  ✅ PASS
+------------------------------------------------------------
+
+Commands:
+curl -I "https://arcanum-base.click/static/example.txt?v=1"
+curl -I "https://arcanum-base.click/static/example.txt?v=2"
+
+Relevant Headers:
+------------------------------------------------------------
+X-Cache: Hit from cloudfront
+Age: 48 → 49
+------------------------------------------------------------
+
+Interpretation:
+- Query strings are ignored for static cache key
+- Cache fragmentation avoided
+- Confirms correct cache policy design
+
+============================================================
+SECTION 3 — API CONTENT (CACHING DISABLED)
+============================================================
+
+Test Endpoint
+-------------
+/api/list
+
+Expected Behavior:
+- NOT cached
+- Always Miss from CloudFront
+- No Age header
+- Fresh origin response every time
+
+------------------------------------------------------------
+3.1 API REQUEST VIA CLOUDFRONT  ✅ PASS
+------------------------------------------------------------
+
+Command:
+curl -I https://arcanum-base.click/api/list
+
+Relevant Headers:
+------------------------------------------------------------
+X-Cache: Miss from cloudfront
+(no Age header)
+------------------------------------------------------------
+
+Interpretation:
+- Response not cached
+- Delivered from origin every request
+
+------------------------------------------------------------
+3.2 REPEATED API REQUESTS  ✅ PASS
+------------------------------------------------------------
+
+Command:
+curl -I https://arcanum-base.click/api/list
+curl -I https://arcanum-base.click/api/list
+
+Relevant Headers (both requests):
+------------------------------------------------------------
+X-Cache: Miss from cloudfront
+------------------------------------------------------------
+
+Interpretation:
+- No cache reuse
+- Prevents stale reads
+- Prevents user-to-user data leakage
+
+============================================================
+SECTION 4 — ORIGIN VALIDATION (CONTROLLED)
+============================================================
+
+------------------------------------------------------------
+4.1 LOCAL ORIGIN FUNCTIONALITY  ✅ PASS
+------------------------------------------------------------
+
+Commands:
+curl -i http://127.0.0.1/init
+curl -i "http://127.0.0.1/add?note=hello"
+curl -i http://127.0.0.1/api/list
+
+Output:
+<h3>Notes</h3>
+<ul>
+  <li>1: hello</li>
+</ul>
+
+Interpretation:
+- Origin application is stateful
+- Confirms API responses must NOT be cached
+
+------------------------------------------------------------
+4.2 DIRECT ALB ACCESS CONTROL  ✅ PASS
+------------------------------------------------------------
+
+Command:
+curl -Ik https://arcanum-alb01-1621613657.us-east-1.elb.amazonaws.com/api/list
+
+Output:
+HTTP/1.1 403 Forbidden
+
+Command (with required origin header):
+curl -ik https://arcanum-alb01-1621613657.us-east-1.elb.amazonaws.com/api/list \
+  -H "X-arcanum-base: <secret>"
+
+Output:
+HTTP/1.1 200 OK
+
+Interpretation:
+- ALB origin is protected
+- Only CloudFront may access origin normally
+
+============================================================
+SECTION 5 — FAILURE CONTEXT AND CORRECTION
+============================================================
+
+Observed Risk:
+--------------
+Initial concern that API responses might be cached.
+
+Verification:
+-------------
+Repeated API requests always returned:
+X-Cache: Miss from cloudfront
+
+Conclusion:
+-----------
+API caching is correctly disabled.
+Static caching is isolated and safe.
+
+============================================================
+FINAL ASSESSMENT
+============================================================
+
+Lab 2B requirements are fully satisfied.
+
+Proven:
+- Static assets are cached aggressively and efficiently
+- API responses are never cached
+- Cache key minimizes variation without sacrificing correctness
+- Query strings do not fragment static cache
+- Headers (X-Cache, Age, Cache-Control) provide objective proof
+
+This lab demonstrates production-grade CDN operation,
+not just CloudFront deployment.
+
+============================================================
+END OF FILE
+============================================================

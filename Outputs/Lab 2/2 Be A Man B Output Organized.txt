@@ -1,0 +1,196 @@
+============================================================
+LAB 2B — HONORS B (BE A MAN B)
+OUTPUT AND VERIFICATION (TEXT FILE)
+CloudFront Invalidation as a Controlled Operation
+============================================================
+
+Design Intent
+-------------
+Honors B proves that CloudFront invalidation is:
+- Used only as a controlled “break glass” operation
+- Narrowly scoped to the smallest possible blast radius
+- Auditable, trackable, and verifiable
+- Never used as a routine deployment mechanism
+
+This lab distinguishes mature CDN operations
+from reckless cache purging.
+
+============================================================
+SECTION 1 — AUTHORITATIVE IDENTIFIERS
+============================================================
+
+CloudFront Distribution
+-----------------------
+Distribution ID: EPDGFAY03D8BQ
+
+Primary Domain:
+---------------
+https://arcanum-base.click
+
+Static Asset Under Test:
+------------------------
+/static/index.html
+
+============================================================
+SECTION 2 — BREAK-GLASS INVALIDATION PROCEDURE (CLI)
+============================================================
+
+------------------------------------------------------------
+2.1 INVALIDATION BATCH DEFINITION  ✅ PASS
+------------------------------------------------------------
+
+File: invalidation.json
+
+{
+  "Paths": {
+    "Quantity": 1,
+    "Items": ["/static/index.html"]
+  },
+  "CallerReference": "break-glass-index-20260207"
+}
+
+Design Notes:
+-------------
+- Single-path invalidation only
+- No wildcard
+- CallerReference is human-readable and auditable
+- File-based batch avoids shell quoting errors
+
+------------------------------------------------------------
+2.2 CREATE INVALIDATION  ✅ PASS
+------------------------------------------------------------
+
+Command:
+aws --region us-east-1 cloudfront create-invalidation \
+  --distribution-id EPDGFAY03D8BQ \
+  --invalidation-batch file://invalidation.json
+
+Output:
+------------------------------------------------------------
+Invalidation ID: I1188ZJ5ME2VN0O83JIVRR05ZL
+Status: InProgress
+CreateTime: 2026-02-07T05:53:44Z
+CallerReference: break-glass-index-20260207
+------------------------------------------------------------
+
+Interpretation:
+- Invalidation request accepted
+- Narrow path scope confirmed
+
+------------------------------------------------------------
+2.3 TRACK INVALIDATION COMPLETION  ✅ PASS
+------------------------------------------------------------
+
+Command:
+aws --region us-east-1 cloudfront get-invalidation \
+  --distribution-id EPDGFAY03D8BQ \
+  --id I1188ZJ5ME2VN0O83JIVRR05ZL
+
+Output:
+------------------------------------------------------------
+Status: Completed
+Paths Invalidated:
+  /static/index.html
+------------------------------------------------------------
+
+Interpretation:
+- Invalidation completed successfully
+- No additional paths affected
+
+============================================================
+SECTION 3 — CACHE CORRECTNESS PROOF
+============================================================
+
+------------------------------------------------------------
+3.1 VERIFY CACHE REFRESH AFTER INVALIDATION  ✅ PASS
+------------------------------------------------------------
+
+Command:
+curl -I https://arcanum-base.click/static/index.html | sed -n '1,30p'
+
+Observed Headers:
+------------------------------------------------------------
+HTTP/1.1 200 OK
+Date: Sat, 07 Feb 2026 06:02:14 GMT
+Last-Modified: Sat, 07 Feb 2026 02:59:38 GMT
+ETag: "1770433178.2059572-258-2757692189"
+Cache-Control: public, max-age=86400, immutable
+X-Cache: Miss from cloudfront
+Via: CloudFront
+X-Amz-Cf-Pop: PHX52-P1
+------------------------------------------------------------
+
+Interpretation:
+- X-Cache: Miss confirms cached object was purged
+- CloudFront fetched fresh content from origin
+- New Date and ETag confirm refreshed object
+- Cache policy remains intact
+
+------------------------------------------------------------
+3.2 EXPECTED POST-REFRESH BEHAVIOR
+------------------------------------------------------------
+
+Expected on subsequent requests:
+- X-Cache transitions to Hit from cloudfront
+- Age header increases
+- Confirms re-caching after refresh
+
+============================================================
+SECTION 4 — REQUIRED POLICY STATEMENT
+============================================================
+
+Invalidation Policy
+-------------------
+CloudFront invalidation is used only for approved “break glass”
+scenarios, such as stale HTML entrypoints after deployment, security
+incidents, corrupted content, or legal takedowns. For normal
+deployments, static assets are versioned (for example,
+/static/app.<hash>.js), allowing new content to be deployed without
+invalidations and ensuring safe, predictable caching behavior.
+
+Wildcard invalidation (/*) is restricted because it purges the entire
+cache, increases cost, causes unnecessary origin load, and undermines
+cache efficiency. It is permitted only for catastrophic incidents and
+requires explicit justification and documentation.
+
+============================================================
+SECTION 5 — INCIDENT SCENARIO (GRADED)
+============================================================
+
+Incident Summary:
+-----------------
+After deployment, users continued receiving an outdated index.html
+that referenced old static assets. Inspection confirmed CloudFront was
+serving a cached HTML entrypoint while versioned static assets were
+otherwise functioning correctly.
+
+Response:
+---------
+A targeted invalidation of /static/index.html was performed instead of
+a wildcard invalidation. After invalidation completed, CloudFront
+served fresh content, verified by an X-Cache: Miss from cloudfront
+response and updated headers.
+
+Outcome:
+--------
+Issue resolved with minimal blast radius and no unnecessary cache
+purge.
+
+============================================================
+FINAL ASSESSMENT
+============================================================
+
+Lab 2B Honors B requirements are fully satisfied.
+
+Proven:
+- Controlled, auditable CloudFront invalidation
+- Narrow blast radius invalidation strategy
+- Correct cache refresh verified via headers
+- Clear operational policy articulated
+- Incident handled with minimal disruption
+
+This demonstrates production-grade CDN operations discipline.
+
+============================================================
+END OF FILE
+============================================================

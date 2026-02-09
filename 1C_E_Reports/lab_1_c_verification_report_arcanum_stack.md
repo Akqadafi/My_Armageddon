@@ -232,7 +232,7 @@ This lab proves I can:
 - Verify infrastructure with authoritative CLI evidence
 - Explain *why* decisions were made, not just *what* was built
 
-This is not theoretical knowledge. This is applied cloud engineering.
+
 
 ---
 
@@ -244,7 +244,6 @@ If handed this repository during an interview, I would be comfortable:
 - Explaining trade‑offs
 - Debugging failures live
 
-That is the standard I built this to.
 
 — **Ahmad K. Qadafi**
 
