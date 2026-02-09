@@ -1,0 +1,7 @@
+ What the new output means (arcanum_private_route_table_id)
+
+The new output arcanum_private_route_table_id = rtb-0361bb4fd188b4c85 confirms Terraform successfully created/recorded the private routing layer used by your private subnets. This proves the   environment now has an declaried route table controlling how private instances reach AWS services (typically via VPC endpoints and/or NAT), which is critical for “private-by-default” networking and for keeping management traffic (SSM, Secrets Manager, CloudWatch Logs, etc.) off the public internet.
+
+ Why Terraform showed “8 changed” and took a while
+
+Terraform reported 0 added, 8 changed, 0 destroyed, meaning it performed in-place updates rather than rebuilding anything. The long  steps are normal for two reasons: (1) Interface VPC endpoints (ssm, ssmmessages, ec2messages, logs, kms, sts, secretsmanager) often require AWS to propagate policy/route-table/security-group changes across AZs, and (2) CloudFront distribution updates are globally propagated and commonly take ~1–10 minutes. The key correctness signal is that everything completed without destruction, indicating a controlled, low-risk update.

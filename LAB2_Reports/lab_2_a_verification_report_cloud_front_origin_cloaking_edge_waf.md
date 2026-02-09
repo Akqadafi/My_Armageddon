@@ -47,7 +47,7 @@ Route53 Zone: arcanum-base.click
 
 ---
 
-## 4. Verification Requirements (From Lab Instructions)
+## 4. Verification Requirements
 
 Lab 2A requires proof of **three conditions**:
 
