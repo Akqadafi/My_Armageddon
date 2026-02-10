@@ -133,7 +133,7 @@ Connection timed out
 
 ## Conclusion
 
-All Transit Gateway components and routes were verified as correct. The failure most likely occurred at the subnet or ENI return-routing layer rather than the TGW configuration itself. The troubleshooting process followed AWS best practices and demonstrates a clear understanding of cross-region TGW networking.
+All Transit Gateway components and routes were verified as correct. The failure most likely occurred at the subnet or ENI return-routing layer rather than the TGW configuration itself. I simply ran out of time. Will attempt to resolve this issue in the future.
 
 ---
 
